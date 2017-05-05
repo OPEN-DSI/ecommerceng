@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2017 Open-DSI                     <support@open-dsi.fr>
+/* Copyright (C) 2017      Open-DSI                     <support@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -591,6 +591,11 @@ class eCommerceRemoteAccessWoocommerce
                                     $attributesLabel .= ', '.$attribute['name'].':'.$attribute['option'];
                                 }
 
+                                $categories = array();
+                                foreach ($product['categories'] as $category) {
+                                    $categories[] = $category['id'];
+                                }
+
                                 $products[] = array(
                                     'remote_id'         => $product['id'].'|'.$variation['id'],  // id product | id variation
                                     'last_update'       => isset($variation['date_modified'])?$variation['date_modified']:$variation['date_created'],
@@ -603,7 +608,7 @@ class eCommerceRemoteAccessWoocommerce
                                     'envente'           => $variation['purchasable'] ? 1 : 0,
                                     'finished'          => 1,    // 1 = manufactured, 0 = raw material
                                     'canvas'            => $canvas,
-                                    'categories'        => '', //$product['categories'],  // a check   // Same as property $product['category_ids']
+                                    'categories'        => $categories,
                                     'tax_rate'          => '', // $variation['tax_rate'], // a check
                                     'price_min'         => $variation['price'],
                                     'fk_country'        => '',
@@ -614,6 +619,11 @@ class eCommerceRemoteAccessWoocommerce
                                 );
                             }
                         } else {
+                            $categories = array();
+                            foreach ($product['categories'] as $category) {
+                                $categories[] = $category['id'];
+                            }
+
                             $products[] = array(
                                 'remote_id'         => $product['id'],  // id product
                                 'last_update'       => isset($product['date_modified'])?$product['date_modified']:$product['date_created'],
@@ -626,7 +636,7 @@ class eCommerceRemoteAccessWoocommerce
                                 'envente'           => $product['purchasable'] ? 1 : 0,
                                 'finished'          => 1,    // 1 = manufactured, 0 = raw material
                                 'canvas'            => $canvas,
-                                'categories'        => '', // $product['categories'],  // a check   // Same as property $product['category_ids']
+                                'categories'        => $categories,
                                 'tax_rate'          => '', // $product['tax_rate'], // a check
                                 'price_min'         => $product['price'],
                                 'fk_country'        => '',
@@ -1213,22 +1223,54 @@ class eCommerceRemoteAccessWoocommerce
      */
     public function getRemoteCategoryTree()
     {
-        dol_syslog("eCommerceRemoteAccessWoocommerce getRemoteCategoryTree session=".$this->session);
- /*       try {
-            //$result = $this->client->call($this->session, 'auguria_dolibarrapi_catalog_category.tree');
-            $result = $this->client->call($this->session, 'catalog_category.tree');
+        global $conf;
+
+        try {
+            $result = array();
+            $idxPage = 1;
+            $per_page = empty($conf->global->ECOMMERCENG_MAXSIZE_MULTICALL) ? 100 : $conf->global->ECOMMERCENG_MAXSIZE_MULTICALL;
+            $updated_at = dol_print_date(time(), 'standard');
+
+            dol_syslog("eCommerceRemoteAccessWoocommerce getRemoteCategoryTree session=".$this->session);
+            while (true) {
+                $page = $this->client->get('products/categories',
+                    [
+                        'page' => $idxPage++,
+                        'per_page' => $per_page,
+                    ]
+                );
+                if (($nbProductCategories = count($page)) == 0) break;
+
+                for ($idxProductCategories = 0; $idxProductCategories < $nbProductCategories; $idxProductCategories++) {
+                    $result[] = array(
+                        'category_id'   => $page[$idxProductCategories]['id'],
+                        'parent_id'     => $page[$idxProductCategories]['parent'],
+                        'name'          => $page[$idxProductCategories]['name'],
+                        'label'         => $page[$idxProductCategories]['slug'],
+                        'description'   => $page[$idxProductCategories]['description'],
+                        'updated_at'    => $updated_at,
+                    );
+                }
+            }
+
+            usort($result, array('eCommerceRemoteAccessWoocommerce','categoriesSort')); // A corrigé
+//            $result = array_reverse($result);
+
+            dol_syslog("eCommerceRemoteAccessWoocommerce getRemoteCategoryTree end. Nb of record of result = ".count($result));
+
             return $result;
-            //dol_syslog($this->client->__getLastRequest());
-        } catch (SoapFault $fault) {
-            $this->errors[]=$this->site->name.': '.$fault->getMessage().'-'.$fault->getCode();
+        } catch (HttpClientException $fault) {
+            $this->errors[]=$fault->getMessage().'-'.$fault->getCode();
             dol_syslog(__METHOD__.': '.$fault->getMessage().'-'.$fault->getCode().'-'.$fault->getTraceAsString(), LOG_WARNING);
-            return false;
-        }*/
-        return array();
-        //var_dump($result);
-        dol_syslog("eCommerceRemoteAccessWoocommerce getRemoteCategoryTree end. Nb of record of result = ".count($result));
+            return array();
+        }
     }
-    
+    private function categoriesSort($a, $b) { // A corrigé
+        if ($a['parent_id'] == $b['parent_id']) return ($a['parent_id'] == 0) ? 0 : 1;
+        return ($a['category_id'] == $b['parent_id']) ? -1 : 1;
+    }
+
+
     /**
      * Return the magento's category att
      *
@@ -1273,8 +1315,28 @@ class eCommerceRemoteAccessWoocommerce
     public function getCategoryData($category_id)
     {
         $result = array();
-        dol_syslog("eCommerceRemoteAccessWoocommerce getCategoryData session=".$this->session);
-/*        try {
+        try {
+            dol_syslog("eCommerceRemoteAccessWoocommerce getCategoryData session=".$this->session);
+            $updated_at = dol_print_date(time(), 'standard');
+            $result =  $this->client->get("products/categories/$category_id");
+            $result = array(
+                'category_id'   => $result['id'],
+                'parent_id'     => $result['parent'],
+                'name'          => $result['name'],
+                'label'         => $result['slug'],
+                'description'   => $result['description'],
+                'updated_at'    => $updated_at,
+            );
+            dol_syslog("eCommerceRemoteAccessWoocommerce getCategoryData end");
+        } catch (HttpClientException $fault) {
+            if ($fault->getCode() != 404) {
+                $this->errors[]=$fault->getMessage().'-'.$fault->getCode();
+                dol_syslog(__METHOD__.': '.$fault->getMessage().'-'.$fault->getCode().'-'.$fault->getTraceAsString(), LOG_WARNING);
+            }
+        }
+        return $result;
+/*        $result = array();
+        try {
             //$result = $this->client->call($this->session, 'auguria_dolibarrapi_catalog_category.tree');
             $result = $this->client->call($this->session, 'catalog_category.info', array('categoryId'=>$category_id));
             //dol_syslog($this->client->__getLastRequest());
@@ -1284,9 +1346,8 @@ class eCommerceRemoteAccessWoocommerce
             dol_syslog($this->client->__getLastRequest(), LOG_WARNING);
             dol_syslog(__METHOD__.': '.$fault->getMessage().'-'.$fault->getCode().'-'.$fault->getTraceAsString(), LOG_WARNING);
             return false;
-        }*/
-        dol_syslog("eCommerceRemoteAccessWoocommerce getCategoryData end");
-        return $result;
+        }
+        return $result;*/
     }
 
     /**

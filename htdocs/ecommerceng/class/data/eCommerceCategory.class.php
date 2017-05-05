@@ -226,9 +226,9 @@ class eCommerceCategory // extends CommonObject
         // Update request
         $sql = "UPDATE " . MAIN_DB_PREFIX . $this->table_element . " SET";
 
-        $sql.= " label='" . $this->label . "',";
+        $sql.= " label='" . $this->db->escape($this->label) . "',";
         $sql.= " type=" . (isset($this->type) ? intval($this->type) : 0) . ",";
-        $sql.= " description='" . $this->description . "',";
+        $sql.= " description='" . $this->db->escape($this->description) . "',";
         $sql.= " fk_category=" . (isset($this->fk_category) ? intval($this->fk_category) : 0) . ",";
         $sql.= " fk_site=" . (isset($this->fk_site) ? intval($this->fk_site) : 0) . ",";
         $sql.= " remote_id=" . (isset($this->remote_id) ? intval($this->remote_id) : 0) . ",";
