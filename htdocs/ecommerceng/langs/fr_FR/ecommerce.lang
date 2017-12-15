@@ -7,8 +7,8 @@ Permission107102=Synchroniser les sites e-commerce
 Permission107103=Configurer les sites e-commerce
 
 ##ADMIN##
-Module107100Name=EcommerceNG
-Module107100Desc=Module de synchronisation entre Dolibarr et les plateformes e-commerce Magento et WooCommerce
+Module107100Name=Woosync
+Module107100Desc=Module de synchronisation entre Dolibarr et les plateformes e-commerce WooCommerce
 BackToListOfSites=Retour à la liste des sites
 NothingToSetup=Activez le module pour accéder à sa configuration
 
@@ -199,3 +199,5 @@ ECommerceRemoteAccessUpdateRemoteStockProduct=Erreur de mise à jour des stocks 
 ECommerceRemoteAccessUpdateRemoteStockProductVariation=Erreur de mise à jour des stocks du produit distant 'id:%s' sur le site '%s': %s
 
 ECommerceSyncheCommerceProductDownloadImageError=Erreur de récupération de l'image (%s) pour le produit 'id:%s' du produit distant 'id:%s' sur le site '%s'
+
+ECommerceNoDescForProductLine=L'api n'a pas pu récupérer la description du produit

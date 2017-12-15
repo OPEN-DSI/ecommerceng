@@ -1,5 +1,17 @@
 # Dolibarr language file - en_Us - magento
 CHARSET=UTF-8
+
+##PERMISSIONS##
+Permission107101=Lire les statuts de synchronisation des sites e-commerce
+Permission107102=Synchroniser les sites e-commerce
+Permission107103=Configurer les sites e-commerce
+
+##ADMIN##
+Module107100Name=Woosync
+Module107100Desc=Module de synchronisation entre Dolibarr et les plateformes e-commerce WooCommerce
+NothingToSetup=Activez le module pour accéder à sa configuration
+
+##SETUP##
 ECommercePriceType=Imported prices' types
 ECommercePriceTypeHT=Tax excluded
 ECommercePriceTypeTTC=Tax included
@@ -196,3 +208,7 @@ ECommerceRemoteAccessUpdateRemoteSociete=Erreur de mise à jour de la société 
 ECommerceRemoteAccessUpdateRemoteSocpeople=Erreur de mise à jour des contacts/adresses de la société distante 'id:%s' sur le site '%s': %s
 ECommerceRemoteAccessUpdateRemoteStockProduct=Erreur de mise à jour des stocks de la variation 'id:%s' du produit distant 'id:%s' sur le site '%s': %s
 ECommerceRemoteAccessUpdateRemoteStockProductVariation=Erreur de mise à jour des stocks du produit distant 'id:%s' sur le site '%s': %s
+
+ECommerceSyncheCommerceProductDownloadImageError=Erreur de récupération de l'image (%s) pour le produit 'id:%s' du produit distant 'id:%s' sur le site '%s'
+
+ECommerceNoDescForProductLine=L'api n'a pas pu récupérer la description du produit
