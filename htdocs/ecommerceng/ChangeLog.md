@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.6.0
+
+- Ajout de l'option query_string_auth lors de la connexion a WooCommerce si l'adresse de la boutique est en https.
+
 ## 4.0.5.0
 
 - Désactivation de la mise à jour du client à la modification du tiers (il n'y avais que l'email de renseigné et qui n'a pas à être modifié)
