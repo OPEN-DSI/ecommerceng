@@ -982,6 +982,7 @@ class eCommerceRemoteAccessWoocommerce
                         'payment_method' => $order['payment_method_title'],
                         'extrafields' => [
                             "ecommerceng_online_payment_{$conf->entity}" => empty($order['date_paid']) ? 0 : 1,
+                            "ecommerceng_wc_status_{$conf->entity}" => $order['status'],
                         ],
                     ];
                 }
@@ -1583,7 +1584,7 @@ class eCommerceRemoteAccessWoocommerce
         ];
         */
         $companyData = [
-            'email' => $object->email,              // string   The email address for the customer. MANDATORY
+            //'email' => $object->email,              // string   The email address for the customer. MANDATORY
             //'first_name'    => '',                  // string   Customer first name.
             //'last_name'     => $object->name,       // string   Customer last name.
             //'username'      => '',                  // string   Customer login name.
@@ -1592,11 +1593,11 @@ class eCommerceRemoteAccessWoocommerce
         ];
 
         try {
-            $result = $this->client->put("customers/$remote_id", $companyData);
+            //$result = $this->client->put("customers/$remote_id", $companyData);
         } catch (HttpClientException $fault) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteSociete', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
+            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteSociete', $remote_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
             dol_syslog(__METHOD__ .
-                ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSociete', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
+                ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSociete', $remote_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
                 ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
             return false;
         }
@@ -1691,7 +1692,7 @@ class eCommerceRemoteAccessWoocommerce
     public function updateRemoteCommande($remote_id, $object)
     {
         dol_syslog(__METHOD__ . ": Update the remote order ID $remote_id for Dolibarr order ID {$object->id} for site ID {$this->site->id}", LOG_DEBUG);
-        global $langs;
+        global $conf, $langs;
 
         $status = '';
         switch ($object->statut) {
@@ -1705,6 +1706,21 @@ class eCommerceRemoteAccessWoocommerce
         }
 
         if (!empty($status)) {
+            $object->fetch_optionals();
+
+            $order_status = [
+                'pending' => 0,
+                'on-hold' => 1,
+                'processing' => 2,
+                'completed' => 3,
+                'cancelled' => 3,
+                'refunded' => 3,
+                'failed' => 3,
+            ];
+
+            $wc_status = $object->array_options["options_ecommerceng_wc_status_{$conf->entity}"];
+            if ($order_status[$status] < $order_status[$wc_status]) $status = $wc_status;
+
             $orderData = [
                 'status' => $status,  // string  Order status. Options: pending, processing, on-hold, completed, cancelled, refunded and failed.
             ];

@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 4.0.5.0
+
+- Désactivation de la mise à jour du client à la modification du tiers (il n'y avais que l'email de renseigné et qui n'a pas à être modifié)
+
+## 4.0.4.0
+
+- Modification de la gestion de mise à jour du statut de la commande
+
 ## 4.0.3.0
 
 - Enregistre la société pour les clients anonymes pour chaque site et non dans l'option ECOMMERCENG_USE_THIS_THIRDPARTY_FOR_NONLOGGED_CUSTOMER 

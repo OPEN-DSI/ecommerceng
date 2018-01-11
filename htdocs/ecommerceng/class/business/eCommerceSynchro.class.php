@@ -1950,8 +1950,18 @@ class eCommerceSynchro
                             $dBCommande->context['fromsyncofecommerceid'] = $this->eCommerceSite->id;
 
                             if (is_array($commandeArray['extrafields'])) {
+                                $update_extrafields = false;
                                 foreach ($commandeArray['extrafields'] as $extrafield => $extrafield_value) {
+                                    if ($dBCommande->array_options['options_'.$extrafield] != $extrafield_value) $update_extrafields = true;
                                     $dBCommande->array_options['options_'.$extrafield] = $extrafield_value;
+                                }
+                                if ($update_extrafields) {
+                                    $result = $dBCommande->insertExtraFields();
+                                    if ($result < 0) {
+                                        $error++;
+                                        $this->error = $this->langs->trans('ECommerceSynchCommandeUpdateError') . ' ' . $dBCommande->error;
+                                        $this->errors[] = $this->error;
+                                    }
                                 }
                             }
 
