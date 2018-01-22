@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.7.0
+
+- Report de la construction de l'url de callback pour OAuth2 dans l'écran de paramètrage du site à l'identique de celle définie dans le script de la page de callback.
+
 ## 4.0.6.0
 
 - Ajout de l'option query_string_auth lors de la connexion a WooCommerce si l'adresse de la boutique est en https.
