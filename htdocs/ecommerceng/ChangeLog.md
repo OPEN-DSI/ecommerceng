@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 4.0.8.0
+
+- Mise a jour de l'api client Woocommerce 1.2.0 en 2.0.0
+- Correction de la construction de l'url de callback pour OAuth2 pour qu'il garde le protocole https du site dans sa construction.
+
 ## 4.0.7.0
 
 - Report de la construction de l'url de callback pour OAuth2 dans l'écran de paramètrage du site à l'identique de celle définie dans le script de la page de callback.

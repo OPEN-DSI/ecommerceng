@@ -382,10 +382,11 @@ if (!empty($ecommerceId)) {
 
     if ($ecommerceOAuth) {
         // Create callback URL
-        $urlwithouturlroot=preg_replace('/'.preg_quote(DOL_URL_ROOT,'/').'$/i','',trim($dolibarr_main_url_root));
-        $urlwithroot=$urlwithouturlroot.DOL_URL_ROOT;		// This is to use external domain name found into config file
+        //$urlwithouturlroot=preg_replace('/'.preg_quote(DOL_URL_ROOT,'/').'$/i','',trim($dolibarr_main_url_root));
+        //$urlwithroot=$urlwithouturlroot.DOL_URL_ROOT;		// This is to use external domain name found into config file
         $uriFactory = new \OAuth\Common\Http\Uri\UriFactory();
-        $currentUri = $uriFactory->createFromAbsolute($urlwithroot.'/custom/ecommerceng/core/modules/oauth/wordpress_oauthcallback.php?ecommerce_id='.$siteId);
+        //$currentUri = $uriFactory->createFromAbsolute($urlwithroot.'/custom/ecommerceng/core/modules/oauth/wordpress_oauthcallback.php?ecommerce_id='.$siteId);
+        $currentUri = $uriFactory->createFromAbsolute(dol_buildpath('/custom/ecommerceng/core/modules/oauth/wordpress_oauthcallback.php', 2).'?ecommerce_id='.$siteId);
         $ecommerceOAuthRedirectUri = $currentUri->getAbsoluteUri();
 //        $ecommerceOAuthRedirectUri = dol_buildpath('/custom/ecommerceng/core/modules/oauth/wordpress_oauthcallback.php', 2).'?ecommerce_id='.$ecommerceId;
         $ecommerceOAuthId = ($_POST['ecommerce_oauth_id'] ? $_POST['ecommerce_oauth_id'] : $siteDb->oauth_id);
