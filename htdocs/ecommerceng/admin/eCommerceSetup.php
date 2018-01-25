@@ -317,7 +317,7 @@ elseif ($_POST['site_form_detail_action'] == 'update_woocommerce_tax_class') {
  *  View
  */
 
-if (! extension_loaded('soap'))
+/*if (! extension_loaded('soap'))
 {
     llxHeader();
 
@@ -325,7 +325,7 @@ if (! extension_loaded('soap'))
 
     llxFooter();
     exit;
-}
+}*/
 
 $classCategorie = new Categorie($db);
 $productCategories = $classCategorie->get_full_arbo('product');

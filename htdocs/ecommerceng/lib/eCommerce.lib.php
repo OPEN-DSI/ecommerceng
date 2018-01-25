@@ -434,17 +434,17 @@ function ecommerceng_update_woocommerce_dict_tax_class($db, $site)
                 return false;
             }
         } else {
-            $taxClasses[$line['code']]['founded'] = true;
+            $taxClasses[$line['code']]->founded = true;
         }
     }
 
     // Add new code from woocommerce
     foreach ($taxClasses as $taxClass) {
-        if (!isset($taxClass['founded'])) {
+        if (!isset($taxClass->founded)) {
             // Add new tax class code
-            $result = $eCommerceDict->insert(['site_id','code','label','entity','active'], ['site_id'=>['value'=>$site->id],'code'=>['value'=>$taxClass['slug'],'type'=>'string'],'label'=>['value'=>$taxClass['name'],'type'=>'string'],'entity'=>['value'=>$conf->entity],'active'=>['value'=>1]]);
+            $result = $eCommerceDict->insert(['site_id','code','label','entity','active'], ['site_id'=>['value'=>$site->id],'code'=>['value'=>$taxClass->slug,'type'=>'string'],'label'=>['value'=>$taxClass->name,'type'=>'string'],'entity'=>['value'=>$conf->entity],'active'=>['value'=>1]]);
             if ($result == false) {
-                setEventMessage($langs->trans('ECommerceWoocommerceErrorAddDictTaxClass', $taxClass['slug'], $taxClass['name'], $db->error()), 'errors');
+                setEventMessage($langs->trans('ECommerceWoocommerceErrorAddDictTaxClass', $taxClass->slug, $taxClass->name, $db->error()), 'errors');
                 return false;
             }
         }

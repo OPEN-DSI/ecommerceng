@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 4.0.9.0
+
+- Corrections suite au changement du format des données reçues par l'API Woocommerce depuis sa mise à jour en 2.0.0
+- Correction mineur de la mise à jour des images lors de la modification d'un produit sur Dolibarr
+
 ## 4.0.8.0
 
 - Mise a jour de l'api client Woocommerce 1.2.0 en 2.0.0

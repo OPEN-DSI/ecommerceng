@@ -241,14 +241,14 @@ class eCommerceRemoteAccessWoocommerce
                 return false;
             }
 
-            if (!isset($page['customers']) || ($nbCustomers = count($page['customers'])) == 0) break;
-            $page = $page['customers'];
+            if (!isset($page->customers) || ($nbCustomers = count($page->customers)) == 0) break;
+            $page = $page->customers;
 
             foreach ($page as $customer) {
-                $date = $this->getDateTimeFromGMTDateTime(!empty($customer['updated_at']) ? $customer['updated_at'] : $customer['created_at']);
+                $date = $this->getDateTimeFromGMTDateTime(!empty($customer->updated_at) ? $customer->updated_at : $customer->created_at);
 
                 if ((!isset($from_date) || $from_date < $date) && (!isset($to_date) || $date <= $to_date)) {
-                    $id = $customer['id'];
+                    $id = $customer->id;
                     $result[$id] = $id;
                     $last_update[$id] = $date->format('Y-m-d H:i:s');
                 }
@@ -306,27 +306,27 @@ class eCommerceRemoteAccessWoocommerce
                 return false;
             }
 
-            if (!isset($page['products']) || ($nbProducts = count($page['products'])) == 0) break;
-            $page = $page['products'];
+            if (!isset($page->products) || ($nbProducts = count($page->products)) == 0) break;
+            $page = $page->products;
 
             foreach ($page as $product) {
                 $update = false;
-                $date_product = $this->getDateTimeFromGMTDateTime(!empty($product['updated_at']) ? $product['updated_at'] : $product['created_at']);
+                $date_product = $this->getDateTimeFromGMTDateTime(!empty($product->updated_at) ? $product->updated_at : $product->created_at);
 
                 // Product
                 if ((!isset($from_date) || $from_date < $date_product) && (!isset($to_date) || $date_product <= $to_date)) {
-                    $id = $product['id'];
+                    $id = $product->id;
                     $result[$id] = $id;
                     $last_update[$id] = $date_product->format('Y-m-d H:i:s');
                 }
 
                 // Variations
                 if (!$update) {
-                    foreach ($product['variations'] as $variation) {
-                        $date_variation = $this->getDateTimeFromGMTDateTime(!empty($variation['updated_at']) ? $variation['updated_at'] : $variation['created_at']);
+                    foreach ($product->variations as $variation) {
+                        $date_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->updated_at) ? $variation->updated_at : $variation->created_at);
 
                         if ((!isset($from_date) || $from_date < $date_variation) && (!isset($to_date) || $date_variation <= $to_date)) {
-                            $id = $product['id'].'|'.$variation['id'];
+                            $id = $product->id.'|'.$variation->id;
                             $result[$id] = $id;
                             $last_update[$id] = $date_variation->format('Y-m-d H:i:s');
                         }
@@ -386,14 +386,14 @@ class eCommerceRemoteAccessWoocommerce
                 return false;
             }
 
-            if (!isset($page['orders']) || ($nbOrders = count($page['orders'])) == 0) break;
-            $page = $page['orders'];
+            if (!isset($page->orders) || ($nbOrders = count($page->orders)) == 0) break;
+            $page = $page->orders;
 
             foreach ($page as $order) {
-                $date = $this->getDateTimeFromGMTDateTime(!empty($order['updated_at']) ? $order['updated_at'] : $order['created_at']);
+                $date = $this->getDateTimeFromGMTDateTime(!empty($order->updated_at) ? $order->updated_at : $order->created_at);
 
                 if ((!isset($from_date) || $from_date < $date) && (!isset($to_date) || $date <= $to_date)) {
-                    $id = $order['id'];
+                    $id = $order->id;
                     $result[$id] = $id;
                     $last_update[$id] = $date->format('Y-m-d H:i:s');
                 }
@@ -458,29 +458,29 @@ class eCommerceRemoteAccessWoocommerce
 
             if (is_array($results)) {
                 foreach ($results as $company) {
-                    $last_update = $this->getDateTimeFromGMTDateTime(!empty($company['date_modified_gmt']) ? $company['date_modified_gmt'] : $company['date_created_gmt']);
+                    $last_update = $this->getDateTimeFromGMTDateTime(!empty($company->date_modified_gmt) ? $company->date_modified_gmt : $company->date_created_gmt);
 
                     // Company
-                    if (!empty($company['billing']['company'])) {
+                    if (!empty($company->billing->company)) {
                         $companies[] = [
-                            'remote_id' => $company['id'],
+                            'remote_id' => $company->id,
                             'last_update' => $last_update->format('Y-m-d H:i:s'),
                             'type' => 'company',
-                            'name' => $company['billing']['company'],
+                            'name' => $company->billing->company,
                             'name_alias' => null,
                             'email' => null,
-                            'email_key' => $company['email'],
+                            'email_key' => $company->email,
                             'client' => 1,
                             'vatnumber' => null,
-                            'note_private' => "Site: '{$this->site->name}' - ID: {$company['id']}",
-                            'country_id' => getCountry($company['billing']['country'], 3),
+                            'note_private' => "Site: '{$this->site->name}' - ID: {$company->id}",
+                            'country_id' => getCountry($company->billing->country, 3),
                             'remote_datas' => $company,
                         ];
                     }
                     // User
                     else {
-                        $firstname = !empty($company['first_name']) ? $company['first_name'] : $company['billing']['first_name'];
-                        $lastname = !empty($company['last_name']) ? $company['last_name'] : $company['billing']['last_name'];
+                        $firstname = !empty($company->first_name) ? $company->first_name : $company->billing->first_name;
+                        $lastname = !empty($company->last_name) ? $company->last_name : $company->billing->last_name;
                         if (!empty($firstname) && !empty($lastname)) {
                             $name = dolGetFirstLastname($firstname, $lastname);
                         } elseif (!empty($firstname)) {
@@ -489,17 +489,17 @@ class eCommerceRemoteAccessWoocommerce
                             $name = $langs->trans('ECommercengWoocommerceWithoutFirstnameLastname');
                         }
                         $companies[] = [
-                            'remote_id' => $company['id'],
+                            'remote_id' => $company->id,
                             'last_update' => $last_update->format('Y-m-d H:i:s'),
                             'type' => 'user',
                             'name' => $name,
                             'name_alias' => null,
-                            'email' => $company['email'],
-                            'email_key' => $company['email'],
+                            'email' => $company->email,
+                            'email_key' => $company->email,
                             'client' => 1,
                             'vatnumber' => null,
-                            'note_private' => "Site: '{$this->site->name}' - ID: {$company['id']}",
-                            'country_id' => getCountry($company['billing']['country'], 3),
+                            'note_private' => "Site: '{$this->site->name}' - ID: {$company->id}",
+                            'country_id' => getCountry($company->billing->country, 3),
                             'remote_datas' => $company,
                         ];
                     }
@@ -528,19 +528,19 @@ class eCommerceRemoteAccessWoocommerce
      */
     public function convertRemoteObjectIntoDolibarrSocpeople($remoteCompany)
     {
-        dol_syslog(__METHOD__ . ": Get remote contacts ID: {$remoteCompany["id"]} for site ID {$this->site->id}", LOG_DEBUG);
+        dol_syslog(__METHOD__ . ": Get remote contacts ID: {$remoteCompany->id} for site ID {$this->site->id}", LOG_DEBUG);
         global $langs;
 
         $contacts = [];
-        $last_update = $this->getDateTimeFromGMTDateTime(!empty($remoteCompany['date_modified_gmt']) ? $remoteCompany['date_modified_gmt'] : $remoteCompany['date_created_gmt']);
+        $last_update = $this->getDateTimeFromGMTDateTime(!empty($remoteCompany->date_modified_gmt) ? $remoteCompany->date_modified_gmt : $remoteCompany->date_created_gmt);
 
-        $bContact = $remoteCompany['billing'];
-        if (!empty($bContact['address_1']) || !empty($bContact['address_2']) || !empty($bContact['postcode']) ||
-            !empty($bContact['city']) || !empty($bContact['country']) ||
-            !empty($bContact['email']) || !empty($bContact['phone'])
+        $bContact = $remoteCompany->billing;
+        if (!empty($bContact->address_1) || !empty($bContact->address_2) || !empty($bContact->postcode) ||
+            !empty($bContact->city) || !empty($bContact->country) ||
+            !empty($bContact->email) || !empty($bContact->phone)
         ) {
-            $firstname = !empty($bContact['first_name']) ? $bContact['first_name'] : $remoteCompany['first_name'];
-            $lastname = !empty($bContact['last_name']) ? $bContact['last_name'] : $remoteCompany['last_name'];
+            $firstname = !empty($bContact->first_name) ? $bContact->first_name : $remoteCompany->first_name;
+            $lastname = !empty($bContact->last_name) ? $bContact->last_name : $remoteCompany->last_name;
             if (!empty($firstname) && empty($lastname)) {
                 $lastname = $langs->trans("ECommercengWoocommerceLastnameNotInformed");
             } elseif (empty($firstname) && empty($lastname)) {
@@ -551,28 +551,28 @@ class eCommerceRemoteAccessWoocommerce
                 'last_update' => $last_update->format('Y-m-d H:i:s'),
                 'firstname' => $firstname,
                 'lastname' => $lastname,
-                'address' => $bContact['address_1'] . (!empty($bContact['address_1']) && !empty($bContact['address_2']) ? "\n" : "") . $bContact['address_2'],
-                'zip' => $bContact['postcode'],
-                'town' => $bContact['city'],
-                'country_id' => getCountry($bContact['country'], 3),
-                'email' => !empty($bContact['email']) ? $bContact['email'] : $remoteCompany['email'],
-                'phone' => $bContact['phone'],
+                'address' => $bContact->address_1 . (!empty($bContact->address_1) && !empty($bContact->address_2) ? "\n" : "") . $bContact->address_2,
+                'zip' => $bContact->postcode,
+                'town' => $bContact->city,
+                'country_id' => getCountry($bContact->country, 3),
+                'email' => !empty($bContact->email) ? $bContact->email : $remoteCompany->email,
+                'phone' => $bContact->phone,
                 'fax' => null,
             ];
         }
 
-        $sContact = $remoteCompany['shipping'];
-        if (!empty($sContact['address_1']) || !empty($sContact['address_2']) ||
-            !empty($sContact['postcode']) || !empty($sContact['city']) ||
-            !empty($sContact['country'])
+        $sContact = $remoteCompany->shipping;
+        if (!empty($sContact->address_1) || !empty($sContact->address_2) ||
+            !empty($sContact->postcode) || !empty($sContact->city) ||
+            !empty($sContact->country)
         ) {
-            if ($bContact['first_name'] != $sContact['first_name'] || $bContact['last_name'] != $sContact['last_name'] ||
-                $bContact['address_1'] != $sContact['address_1'] || $bContact['address_2'] != $sContact['address_2'] ||
-                $bContact['postcode'] != $sContact['postcode'] || $bContact['city'] != $sContact['city'] ||
-                $bContact['country'] != $sContact['country']
+            if ($bContact->first_name != $sContact->first_name || $bContact->last_name != $sContact->last_name ||
+                $bContact->address_1 != $sContact->address_1 || $bContact->address_2 != $sContact->address_2 ||
+                $bContact->postcode != $sContact->postcode || $bContact->city != $sContact->city ||
+                $bContact->country != $sContact->country
             ) {
-                $firstname = !empty($sContact['first_name']) ? $sContact['first_name'] : $remoteCompany['first_name'];
-                $lastname = !empty($sContact['last_name']) ? $sContact['last_name'] : $remoteCompany['last_name'];
+                $firstname = !empty($sContact->first_name) ? $sContact->first_name : $remoteCompany->first_name;
+                $lastname = !empty($sContact->last_name) ? $sContact->last_name : $remoteCompany->last_name;
                 if (!empty($firstname) && empty($lastname)) {
                     $lastname = $langs->trans("ECommercengWoocommerceLastnameNotInformed");
                 } elseif (empty($firstname) && empty($lastname)) {
@@ -583,10 +583,10 @@ class eCommerceRemoteAccessWoocommerce
                     'last_update' => $last_update->format('Y-m-d H:i:s'),
                     'firstname' => $firstname,
                     'lastname' => $lastname,
-                    'address' => $sContact['address_1'] . (!empty($sContact['address_1']) && !empty($sContact['address_2']) ? "\n" : "") . $sContact['address_2'],
-                    'zip' => $sContact['postcode'],
-                    'town' => $sContact['city'],
-                    'country_id' => getCountry($sContact['country'], 3),
+                    'address' => $sContact->address_1 . (!empty($sContact->address_1) && !empty($sContact->address_2) ? "\n" : "") . $sContact->address_2,
+                    'zip' => $sContact->postcode,
+                    'town' => $sContact->city,
+                    'country_id' => getCountry($sContact->country, 3),
                     'email' => null,
                     'phone' => null,
                     'fax' => null,
@@ -650,26 +650,26 @@ class eCommerceRemoteAccessWoocommerce
                 foreach ($results as $product) {
                     // Categories
                     $categories = [];
-                    foreach ($product['categories'] as $category) {
-                        $categories[] = $category['id'];
+                    foreach ($product->categories as $category) {
+                        $categories[] = $category->id;
                     }
 
                     // Images
                     $images = [];
                     if (!empty($conf->global->ECOMMERCENG_ENABLE_SYNCHRO_IMAGES)) {
-                        foreach ($product['images'] as $image) {
-                            $last_update = $this->getDateTimeFromGMTDateTime(!empty($image['date_modified_gmt']) ? $image['date_modified_gmt'] : $image['date_created_gmt']);
+                        foreach ($product->images as $image) {
+                            $last_update = $this->getDateTimeFromGMTDateTime(!empty($image->date_modified_gmt) ? $image->date_modified_gmt : $image->date_created_gmt);
                             $images[] = [
-                                'url' => $image['src'],
+                                'url' => $image->src,
                                 'date_modified' => $last_update->format('Y-m-d H:i:s'),
                             ];
                         }
                         array_reverse($images);
                     }
 
-                    $last_update_product = $this->getDateTimeFromGMTDateTime(!empty($product['date_modified_gmt']) ? $product['date_modified_gmt'] : $product['date_created_gmt']);
+                    $last_update_product = $this->getDateTimeFromGMTDateTime(!empty($product->date_modified_gmt) ? $product->date_modified_gmt : $product->date_created_gmt);
 
-                    $remote_id = $product['id'];  // id product
+                    $remote_id = $product->id;  // id product
                     $last_update = $last_update_product->format('Y-m-d H:i:s');
 
                     // Produit de base
@@ -678,39 +678,39 @@ class eCommerceRemoteAccessWoocommerce
                         $products[$remote_id] = [
                             'remote_id' => $remote_id,
                             'last_update' => $last_update,
-                            'fk_product_type' => ($product['virtual'] ? 1 : 0), // 0 (product) or 1 (service)
-                            'ref' => $product['sku'],
-                            'label' => $product['name'],
-                            'weight' => $product['weight'],
-                            'price' => $product['price'],
-                            'envente' => empty($product['variations']) ? 1 : 0,
-                            'enachat' => empty($product['variations']) ? 1 : 0,
+                            'fk_product_type' => ($product->virtual ? 1 : 0), // 0 (product) or 1 (service)
+                            'ref' => $product->sku,
+                            'label' => $product->name,
+                            'weight' => $product->weight,
+                            'price' => $product->price,
+                            'envente' => empty($product->variations) ? 1 : 0,
+                            'enachat' => empty($product->variations) ? 1 : 0,
                             'finished' => 1,    // 1 = manufactured, 0 = raw material
                             'canvas' => $canvas,
                             'categories' => $categories,
-                            'tax_rate' => $this->getTaxRate($product['tax_class'], $product['tax_status']),
-                            'price_min' => $product['price'],
+                            'tax_rate' => $this->getTaxRate($product->tax_class, $product->tax_status),
+                            'price_min' => $product->price,
                             'fk_country' => '',
-                            'url' => $product['permalink'],
+                            'url' => $product->permalink,
                             // Stock
-                            'stock_qty' => $product['stock_quantity'],
-                            'is_in_stock' => $product['in_stock'],   // not used
+                            'stock_qty' => $product->stock_quantity,
+                            'is_in_stock' => $product->in_stock,   // not used
                             'extrafields' => [
-                                "ecommerceng_wc_status_{$this->site->id}_{$conf->entity}" => $product['status'],
-                                "ecommerceng_description_{$conf->entity}" => $product['description'],
-                                "ecommerceng_short_description_{$conf->entity}" => $product['short_description'],
-                                "ecommerceng_tax_class_{$this->site->id}_{$conf->entity}" => $this->getTaxClass($product['tax_class'], $product['tax_status']),
+                                "ecommerceng_wc_status_{$this->site->id}_{$conf->entity}" => $product->status,
+                                "ecommerceng_description_{$conf->entity}" => $product->description,
+                                "ecommerceng_short_description_{$conf->entity}" => $product->short_description,
+                                "ecommerceng_tax_class_{$this->site->id}_{$conf->entity}" => $this->getTaxClass($product->tax_class, $product->tax_status),
                             ],
                             'images' => $images,
                         ];
                     }
 
                     // Variations
-                    $requestGroupsVariations = $this->getRequestGroups($remoteVariationObject[$product['id']], $nb_max_by_request);
+                    $requestGroupsVariations = $this->getRequestGroups($remoteVariationObject[$product->id], $nb_max_by_request);
                     foreach ($requestGroupsVariations as $requestVariations) {
-                        dol_syslog(__METHOD__ . ": Get ".count($requestVariations)." products variations of remote product (ID:{$product['id']}): " . implode(', ', $requestVariations), LOG_DEBUG);
+                        dol_syslog(__METHOD__ . ": Get ".count($requestVariations)." products variations of remote product (ID:{$product->id}): " . implode(', ', $requestVariations), LOG_DEBUG);
                         try {
-                            $results = $this->client->get('products/' . $product['id'] . '/variations',
+                            $results = $this->client->get('products/' . $product->id . '/variations',
                                 [
                                     'per_page' => $nb_max_by_request,
                                     'include' => implode(',', $requestVariations),
@@ -727,25 +727,25 @@ class eCommerceRemoteAccessWoocommerce
                         if (is_array($results)) {
                             foreach ($results as $variation) {
                                 $attributesLabel = '';
-                                foreach ($variation['attributes'] as $attribute) {
-                                    $attributesLabel .= ', ' . $attribute['name'] . ':' . $attribute['option'];
+                                foreach ($variation->attributes as $attribute) {
+                                    $attributesLabel .= ', ' . $attribute->name . ':' . $attribute->option;
                                 }
 
                                 // Images
                                 $images = [];
                                 if (!empty($conf->global->ECOMMERCENG_ENABLE_SYNCHRO_IMAGES)) {
-                                    if (!empty($variation['image'])) {
-                                        $last_update = $this->getDateTimeFromGMTDateTime(!empty($variation['image']['date_modified_gmt']) ? $variation['image']['date_modified_gmt'] : $variation['image']['date_created_gmt']);
+                                    if (!empty($variation->image)) {
+                                        $last_update = $this->getDateTimeFromGMTDateTime(!empty($variation->image->date_modified_gmt) ? $variation->image->date_modified_gmt : $variation->image->date_created_gmt);
                                         $images[] = [
-                                            'url' => $variation['image']['src'],
+                                            'url' => $variation->image->src,
                                             'date_modified' => $last_update->format('Y-m-d H:i:s'),
                                         ];
                                     }
                                 }
 
-                                $last_update_product_variation = $this->getDateTimeFromGMTDateTime(!empty($variation['date_modified_gmt']) ? $variation['date_modified_gmt'] : $variation['date_created_gmt']);
+                                $last_update_product_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->date_modified_gmt) ? $variation->date_modified_gmt : $variation->date_created_gmt);
 
-                                $remote_id = $product['id'] . '|' . $variation['id'];  // id product | id variation
+                                $remote_id = $product->id . '|' . $variation->id;  // id product | id variation
                                 $last_update = $last_update_product_variation->format('Y-m-d H:i:s');
 
                                 // Variation
@@ -753,26 +753,26 @@ class eCommerceRemoteAccessWoocommerce
                                 $products[$remote_id] = [
                                     'remote_id' => $remote_id,
                                     'last_update' => $last_update,
-                                    'fk_product_type' => ($variation['virtual'] ? 1 : 0), // 0 (product) or 1 (service)
-                                    'ref' => $variation['sku'],
-                                    'label' => $product['name'] . $attributesLabel,
-                                    'weight' => $variation['weight'],
-                                    'price' => $variation['price'],
+                                    'fk_product_type' => ($variation->virtual ? 1 : 0), // 0 (product) or 1 (service)
+                                    'ref' => $variation->sku,
+                                    'label' => $product->name . $attributesLabel,
+                                    'weight' => $variation->weight,
+                                    'price' => $variation->price,
                                     'envente' => 1,
                                     'enachat' => 1,
                                     'finished' => 1,    // 1 = manufactured, 0 = raw material
                                     'canvas' => $canvas,
-                                    'categories' => $product['categories'],
-                                    'tax_rate' => $this->getTaxRate($variation['tax_class'], $variation['tax_status']),
-                                    'price_min' => $variation['price'],
+                                    'categories' => $product->categories,
+                                    'tax_rate' => $this->getTaxRate($variation->tax_class, $variation->tax_status),
+                                    'price_min' => $variation->price,
                                     'fk_country' => '',
-                                    'url' => $variation['permalink'],
+                                    'url' => $variation->permalink,
                                     // Stock
-                                    'stock_qty' => $variation['stock_quantity'],
-                                    'is_in_stock' => $variation['in_stock'],   // not used
+                                    'stock_qty' => $variation->stock_quantity,
+                                    'is_in_stock' => $variation->in_stock,   // not used
                                     'extrafields' => [
-                                        "ecommerceng_description_{$conf->entity}" => $variation['description'],
-                                        "ecommerceng_tax_class_{$this->site->id}_{$conf->entity}" => $this->getTaxClass($variation['tax_class'], $variation['tax_status']),
+                                        "ecommerceng_description_{$conf->entity}" => $variation->description,
+                                        "ecommerceng_tax_class_{$this->site->id}_{$conf->entity}" => $this->getTaxClass($variation->tax_class, $variation->tax_status),
                                     ],
                                     'images' => $images,
                                 ];
@@ -829,33 +829,33 @@ class eCommerceRemoteAccessWoocommerce
                 foreach ($results as $order) {
                     // Set items
                     $items = [];
-                    foreach ($order['line_items'] as $item) {
+                    foreach ($order->line_items as $item) {
                         $items[] = [
-                            'item_id' => $item['id'],
-                            'id_remote_product' => !empty($item['variation_id']) ? $item['product_id'] . '|' . $item['variation_id'] : $item['product_id'],
-                            'description' => $item['name'],
+                            'item_id' => $item->id,
+                            'id_remote_product' => !empty($item->variation_id) ? $item->product_id . '|' . $item->variation_id : $item->product_id,
+                            'description' => $item->name,
                             'product_type' => 'simple',
-                            'price' => $item['price'],
-                            'qty' => $item['quantity'],
-                            'tva_tx' => $this->getClosestDolibarrTaxRate($item['total'], $item['total_tax']),
+                            'price' => $item->price,
+                            'qty' => $item->quantity,
+                            'tva_tx' => $this->getClosestDolibarrTaxRate($item->total, $item->total_tax),
                         ];
                     }
 
                     // Set remote id company : 0 for anonymous
                     $eCommerceTempSoc = new eCommerceSociete($this->db);
-                    if (empty($order['customer_id']) || $eCommerceTempSoc->fetchByRemoteId($order['customer_id'], $this->site->id) < 0) {
-                        dol_syslog(__METHOD__ . ": The customer of the remote order ID " . $order['id'] . " was not found into companies table link", LOG_WARNING);
+                    if (empty($order->customer_id) || $eCommerceTempSoc->fetchByRemoteId($order->customer_id, $this->site->id) < 0) {
+                        dol_syslog(__METHOD__ . ": The customer of the remote order ID " . $order->id . " was not found into companies table link", LOG_WARNING);
                         $remoteCompanyID = 0;   // If company was not found into companies table link
                     } else {
-                        $remoteCompanyID = $order['customer_id'];
+                        $remoteCompanyID = $order->customer_id;
                     }
 
-                    $last_update = $this->getDateTimeFromGMTDateTime(!empty($order['date_modified_gmt']) ? $order['date_modified_gmt'] : $order['date_created_gmt']);
+                    $last_update = $this->getDateTimeFromGMTDateTime(!empty($order->date_modified_gmt) ? $order->date_modified_gmt : $order->date_created_gmt);
 
                     // Set billing's address
-                    $bContact = $order['billing'];
-                    $firstname = $bContact['first_name'];
-                    $lastname = $bContact['last_name'];
+                    $bContact = $order->billing;
+                    $firstname = $bContact->first_name;
+                    $lastname = $bContact->last_name;
                     if (!empty($firstname) && empty($lastname)) {
                         $lastname = $langs->trans("ECommercengWoocommerceLastnameNotInformed");
                     } elseif (empty($firstname) && empty($lastname)) {
@@ -867,12 +867,12 @@ class eCommerceRemoteAccessWoocommerce
                         'last_update' => $last_update->format('Y-m-d H:i:s'),
                         'firstname' => $firstname,
                         'lastname' => $lastname,
-                        'address' => $bContact['address_1'] . (!empty($bContact['address_1']) && !empty($bContact['address_2']) ? "\n" : "") . $bContact['address_2'],
-                        'zip' => $bContact['postcode'],
-                        'town' => $bContact['city'],
-                        'country_id' => getCountry($bContact['country'], 3),
-                        'email' => $bContact['email'],
-                        'phone' => $bContact['phone'],
+                        'address' => $bContact->address_1 . (!empty($bContact->address_1) && !empty($bContact->address_2) ? "\n" : "") . $bContact->address_2,
+                        'zip' => $bContact->postcode,
+                        'town' => $bContact->city,
+                        'country_id' => getCountry($bContact->country, 3),
+                        'email' => $bContact->email,
+                        'phone' => $bContact->phone,
                         'fax' => null,
                     ];
 
@@ -881,18 +881,18 @@ class eCommerceRemoteAccessWoocommerce
                     $contactInvoice['type'] = 1; //eCommerceSocpeople::CONTACT_TYPE_INVOICE;
 
                     // Set shipping's address
-                    $sContact = $order['shipping'];
-                    if (!empty($sContact['address_1']) || !empty($sContact['address_2']) ||
-                        !empty($sContact['postcode']) || !empty($sContact['city']) ||
-                        !empty($sContact['country'])
+                    $sContact = $order->shipping;
+                    if (!empty($sContact->address_1) || !empty($sContact->address_2) ||
+                        !empty($sContact->postcode) || !empty($sContact->city) ||
+                        !empty($sContact->country)
                     ) {
-                        if ($bContact['first_name'] != $sContact['first_name'] || $bContact['last_name'] != $sContact['last_name'] ||
-                            $bContact['address_1'] != $sContact['address_1'] || $bContact['address_2'] != $sContact['address_2'] ||
-                            $bContact['postcode'] != $sContact['postcode'] || $bContact['city'] != $sContact['city'] ||
-                            $bContact['country'] != $sContact['country']
+                        if ($bContact->first_name != $sContact->first_name || $bContact->last_name != $sContact->last_name ||
+                            $bContact->address_1 != $sContact->address_1 || $bContact->address_2 != $sContact->address_2 ||
+                            $bContact->postcode != $sContact->postcode || $bContact->city != $sContact->city ||
+                            $bContact->country != $sContact->country
                         ) {
-                            $firstname = $sContact['first_name'];
-                            $lastname = $sContact['last_name'];
+                            $firstname = $sContact->first_name;
+                            $lastname = $sContact->last_name;
                             if (!empty($firstname) && empty($lastname)) {
                                 $lastname = $langs->trans("ECommercengWoocommerceLastnameNotInformed");
                             } elseif (empty($firstname) && empty($lastname)) {
@@ -904,10 +904,10 @@ class eCommerceRemoteAccessWoocommerce
                                 'last_update' => $last_update->format('Y-m-d H:i:s'),
                                 'firstname' => $firstname,
                                 'lastname' => $lastname,
-                                'address' => $sContact['address_1'] . (!empty($sContact['address_1']) && !empty($sContact['address_2']) ? "\n" : "") . $sContact['address_2'],
-                                'zip' => $sContact['postcode'],
-                                'town' => $sContact['city'],
-                                'country_id' => getCountry($sContact['country'], 3),
+                                'address' => $sContact->address_1 . (!empty($sContact->address_1) && !empty($sContact->address_2) ? "\n" : "") . $sContact->address_2,
+                                'zip' => $sContact->postcode,
+                                'town' => $sContact->city,
+                                'country_id' => getCountry($sContact->country, 3),
                                 'email' => null,
                                 'phone' => null,
                                 'fax' => null,
@@ -924,16 +924,16 @@ class eCommerceRemoteAccessWoocommerce
                     // Set delivery as service
                     $shippingDisplayIfNull = (empty($conf->global->ECOMMERCENG_SHIPPING_NOT_DISPLAY_IF_NULL) ? true : false);
                     $delivery = [
-                        'description' => $langs->trans('ECommerceShipping') . (isset($order['shipping_lines'][0]) ? ' - ' .
-                                $order['shipping_lines'][0]['method_title'] : ''), // $order['customer_note']
-                        'price' => $order['shipping_total'],
-                        'qty' => $shippingDisplayIfNull || isset($order['shipping_lines'][0]) ? 1 : 0, //0 to not show
-                        'tva_tx' => $this->getClosestDolibarrTaxRate($order['shipping_total'], $order['shipping_tax'])
+                        'description' => $langs->trans('ECommerceShipping') . (isset($order->shipping_lines[0]) ? ' - ' .
+                                $order->shipping_lines[0]->method_title : ''), // $order->customer_note
+                        'price' => $order->shipping_total,
+                        'qty' => $shippingDisplayIfNull || isset($order->shipping_lines[0]) ? 1 : 0, //0 to not show
+                        'tva_tx' => $this->getClosestDolibarrTaxRate($order->shipping_total, $order->shipping_tax)
                     ];
 
                     // Set status of order
-                    // $order['status'] is: 'pending', 'processing', 'on-hold', 'completed', 'cancelled', 'refunded', 'failed'
-                    $orderStatus = $order['status'];
+                    // $order->status is: 'pending', 'processing', 'on-hold', 'completed', 'cancelled', 'refunded', 'failed'
+                    $orderStatus = $order->status;
 
                     $status = '';
                     switch ($orderStatus) {
@@ -947,45 +947,45 @@ class eCommerceRemoteAccessWoocommerce
                     }
                     if (!empty($conf->global->ECOMMERCENG_WOOCOMMERCE_FORCE_ORDER_STATUS_TO_DRAFT)) $status = Commande::STATUS_DRAFT;
                     if ($status == '') {
-                        dol_syslog(__METHOD__ . ": Status \"$orderStatus\" was not found for remote order ID {$order['id']} and set in draft", LOG_WARNING);
+                        dol_syslog(__METHOD__ . ": Status \"$orderStatus\" was not found for remote order ID {$order->id} and set in draft", LOG_WARNING);
                         $status = Commande::STATUS_DRAFT;   // draft by default
                     }
 
                     // Set dolibarr billed status (payed or not)
                     $billed = -1;   // unknown
-                    if ($order['status'] == 'pending') $billed = 0;
-                    if ($order['status'] == 'processing') $billed = 0;   //
-                    if ($order['status'] == 'on-hold') $billed = 0;      //
-                    if ($order['status'] == 'completed') $billed = 1;    // We are sure for complete that order is payed
-                    if ($order['status'] == 'cancelled') $billed = 0;    // We are sure for canceled that order was not payed
-                    if ($order['status'] == 'refunded') $billed = 1;     //
-                    if ($order['status'] == 'failed') $billed = 0;       //
+                    if ($order->status == 'pending') $billed = 0;
+                    if ($order->status == 'processing') $billed = 0;   //
+                    if ($order->status == 'on-hold') $billed = 0;      //
+                    if ($order->status == 'completed') $billed = 1;    // We are sure for complete that order is payed
+                    if ($order->status == 'cancelled') $billed = 0;    // We are sure for canceled that order was not payed
+                    if ($order->status == 'refunded') $billed = 1;     //
+                    if ($order->status == 'failed') $billed = 0;       //
                     // Note: with processing, billed can be 0 or 1, so we keep -1
 
                     // Add order content to array or orders
                     $orders[] = [
                         'last_update' => $last_update->format('Y-m-d H:i:s'),
-                        'remote_id' => $order['id'],
-                        'remote_increment_id' => $order['id'],
+                        'remote_id' => $order->id,
+                        'remote_increment_id' => $order->id,
                         'remote_id_societe' => $remoteCompanyID,
-                        'ref_client' => $order['id'],
-                        'date_commande' => $order['date_created'],
-                        'date_livraison' => $order['date_completed'],
+                        'ref_client' => $order->id,
+                        'date_commande' => $order->date_created,
+                        'date_livraison' => $order->date_completed,
                         'items' => $items,
                         'delivery' => $delivery,
-                        'note' => $order['customer_note'],
+                        'note' => $order->customer_note,
                         'socpeopleCommande' => $contactBilling,
                         'socpeopleFacture' => $contactInvoice,
                         'socpeopleLivraison' => $contactShipping,
                         'status' => $status,                         // dolibarr status
                         'billed' => $billed,
-                        'remote_state' => $order['status'],        // remote state, for information only (less accurate than status)
-                        'remote_status' => $order['status'],      // remote status, for information only (more accurate than state)
+                        'remote_state' => $order->status,        // remote state, for information only (less accurate than status)
+                        'remote_status' => $order->status,      // remote status, for information only (more accurate than state)
                         'remote_order' => $order,
-                        'payment_method' => $order['payment_method_title'],
+                        'payment_method' => $order->payment_method_title,
                         'extrafields' => [
-                            "ecommerceng_online_payment_{$conf->entity}" => empty($order['date_paid']) ? 0 : 1,
-                            "ecommerceng_wc_status_{$conf->entity}" => $order['status'],
+                            "ecommerceng_online_payment_{$conf->entity}" => empty($order->date_paid) ? 0 : 1,
+                            "ecommerceng_wc_status_{$conf->entity}" => $order->status,
                         ],
                     ];
                 }
@@ -1050,12 +1050,12 @@ class eCommerceRemoteAccessWoocommerce
             if (count($results) == 0) break;
 
             foreach ($results as $category) {
-                $categories[$category['id']] = [
-                    'category_id' => $category['id'],  // id category
-                    'parent_id' => $category['parent'],
-                    'label' => $category['name'],
-                    'name' => $category['name'],
-                    'description' => $category['description'],
+                $categories[$category->id] = [
+                    'category_id' => $category->id,  // id category
+                    'parent_id' => $category->parent,
+                    'label' => $category->name,
+                    'name' => $category->name,
+                    'description' => $category->description,
                     'updated_at' => '',
                 ];
             }
@@ -1126,11 +1126,11 @@ class eCommerceRemoteAccessWoocommerce
 
         if (isset($result)) {
             $category = [
-                'category_id' => $result['id'],  // id category
-                'parent_id' => $result['parent'],
-                'label' => $result['name'],
-                'name' => $result['name'],
-                'description' => $result['description'],
+                'category_id' => $result->id,  // id category
+                'parent_id' => $result->parent,
+                'label' => $result->name,
+                'name' => $result->name,
+                'description' => $result->description,
                 'updated_at' => '',
             ];
         }
@@ -1182,29 +1182,37 @@ class eCommerceRemoteAccessWoocommerce
             $totalWeight = sprintf("%f", $object->weight * $trueWeightUnit);
         }
 
-        try {
-            if ($isProductVariation) { // Variations
-                $results = $this->client->get("products/$remote_product_id/variations/$remote_product_variation_id");
-            } else {
-                $results = $this->client->get("products/$remote_product_id");
-            }
-        } catch (HttpClientException $fault) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductGetRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
-            dol_syslog(__METHOD__ .
-                ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductGetRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
-                ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
-            return false;
-        }
-
         // images
         $images = [];
         if (!empty($conf->global->ECOMMERCENG_ENABLE_SYNCHRO_IMAGES)) {
             // Get current images
             $current_images = [];
-            if (!empty($results) && isset($results['images']) && is_array($results['images'])) {
-                foreach ($results['images'] as $image) {
-                    $current_images[$image['name']] = $image['id'];
+            try {
+                if ($isProductVariation) { // Variations
+                    $results = $this->client->get("products/$remote_product_id/variations/$remote_product_variation_id");
+                } else {
+                    $results = $this->client->get("products/$remote_product_id");
                 }
+
+                if (!empty($results)) {
+                    if ($isProductVariation) {
+                        if (isset($results->image)) {
+                            $current_images[$results->image->name] = $results->image->id;
+                        }
+                    } else {
+                        if (is_array($results->images)) {
+                            foreach ($results->images as $image) {
+                                $current_images[$image->name] = $image->id;
+                            }
+                        }
+                    }
+                }
+            } catch (HttpClientException $fault) {
+               $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductGetRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
+               dol_syslog(__METHOD__ .
+                   ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductGetRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
+                   ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
+               return false;
             }
 
             // Product - Images properties
@@ -1953,7 +1961,7 @@ class eCommerceRemoteAccessWoocommerce
         $eCommerceProduct = new eCommerceProduct($this->db);
         $eCommerceProduct->fk_product = $object->id;
         $eCommerceProduct->fk_site = $this->site->id;
-        $eCommerceProduct->remote_id = $res['id'];
+        $eCommerceProduct->remote_id = $res->id;
         $res = $eCommerceProduct->create($user);
         if ($res < 0) {
             $this->errors[] = $langs->trans('ECommerceWoocommerceCreateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error);
@@ -2052,7 +2060,7 @@ class eCommerceRemoteAccessWoocommerce
             if (isset($this->woocommerceTaxes['classes'][$tax_class]) && count($this->woocommerceTaxes['classes'][$tax_class]) == 1) {
                 $tax_rate = $this->woocommerceTaxes['classes'][$tax_class];
                 $tax_rate = array_values($tax_rate);
-                $tax_rate = doubleval($tax_rate[0]['rate']);
+                $tax_rate = doubleval($tax_rate[0]->rate);
 
                 // Get near dolibarr tax for woocommerce tax rate
                 $tax = $this->_getClosestDolibarrTaxRate($tax_rate);
@@ -2191,8 +2199,8 @@ class eCommerceRemoteAccessWoocommerce
 
         $taxClassesTable = [];
         foreach ($tax_classes as $tax_class) {
-            unset($tax_class['_links']);
-            $taxClassesTable[$tax_class['slug']] = $tax_class;
+            unset($tax_class->_links);
+            $taxClassesTable[$tax_class->slug] = $tax_class;
         }
 
         dol_syslog(__METHOD__ . ": end, return: ".json_encode($taxClassesTable), LOG_DEBUG);
@@ -2231,24 +2239,24 @@ class eCommerceRemoteAccessWoocommerce
             }
 
             foreach ($taxes as $tax) {
-                $id = $tax['id'];
-                unset($tax['_links']);
+                $id = $tax->id;
+                unset($tax->_links);
 
                 $taxesTable['taxes'][$id] = $tax;
-                if (!empty($tax['class'])) {
-                    $taxesTable['classes'][$tax['class']][$id] = $tax;
+                if (!empty($tax->class)) {
+                    $taxesTable['classes'][$tax->class][$id] = $tax;
                 }
-                if (!empty($tax['country'])) {
-                    $taxesTable['countries'][$tax['country']][$id] = $tax;
+                if (!empty($tax->country)) {
+                    $taxesTable['countries'][$tax->country][$id] = $tax;
                 }
-                if (!empty($tax['state'])) {
-                    $taxesTable['states'][$tax['state']][$id] = $tax;
+                if (!empty($tax->state)) {
+                    $taxesTable['states'][$tax->state][$id] = $tax;
                 }
-                if (!empty($tax['postcode'])) {
-                    $taxesTable['postcodes'][$tax['postcode']][$id] = $tax;
+                if (!empty($tax->postcode)) {
+                    $taxesTable['postcodes'][$tax->postcode][$id] = $tax;
                 }
-                if (!empty($tax['city'])) {
-                    $taxesTable['cities'][$tax['city']][$id] = $tax;
+                if (!empty($tax->city)) {
+                    $taxesTable['cities'][$tax->city][$id] = $tax;
                 }
             }
         } while (!empty($taxes));
