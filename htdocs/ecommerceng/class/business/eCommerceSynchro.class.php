@@ -965,7 +965,7 @@ class eCommerceSynchro
                 return -1;
             }
         } catch (Exception $e) {
-            $this->errors[] = $this->langs->trans('ECommerceSynchCategoryConnectError');
+            $this->errors[] = $this->langs->trans('ECommerceSynchCategoryConnectError').': '.$e->getMessage();
             return -1;
         }
 
@@ -1244,7 +1244,7 @@ class eCommerceSynchro
                 $this->errors[] = $this->error;
             }
         } catch (Exception $e) {
-            $this->errors[] = $this->langs->trans('ECommerceErrorsynchSociete');
+            $this->errors[] = $this->langs->trans('ECommerceErrorsynchSociete').': '.$e->getMessage();
         }
         return -1;
     }
@@ -1383,7 +1383,7 @@ class eCommerceSynchro
                 return false;
             }
         } catch (Exception $e) {
-            $this->errors[] = $this->langs->trans('ECommerceErrorsynchSocpeople');
+            $this->errors[] = $this->langs->trans('ECommerceErrorsynchSocpeople').': '.$e->getMessage();
         }
         return false;
     }
@@ -1843,7 +1843,7 @@ class eCommerceSynchro
                 $this->errors[] = $this->error;
             }
         } catch (Exception $e) {
-            $this->error = $this->langs->trans('ECommerceErrorsynchProduct');
+            $this->error = $this->langs->trans('ECommerceErrorsynchProduct').': '.$e->getMessage();
             $this->errors[] = $this->error;
             dol_syslog($this->error, LOG_WARNING);
         }
@@ -2421,7 +2421,7 @@ class eCommerceSynchro
                 $this->errors[] = $this->error;
             }
         } catch (Exception $e) {
-            $this->errors[] = $this->langs->trans('ECommerceErrorsynchCommande');
+            $this->errors[] = $this->langs->trans('ECommerceErrorsynchCommande').': '.$e->getMessage();
         }
 
         return -1;
@@ -2908,7 +2908,7 @@ class eCommerceSynchro
                 $this->errors[] = $this->error;
             }
         } catch (Exception $e) {
-            $this->errors[] = $this->langs->trans('ECommerceErrorsynchFacture');
+            $this->errors[] = $this->langs->trans('ECommerceErrorsynchFacture').': '.$e->getMessage();
         }
 
         return -1;
@@ -2930,7 +2930,7 @@ class eCommerceSynchro
 
             return $this->eCommerceRemoteAccess->createRemoteLivraison($livraison, $remote_order_id);
         } catch (Exception $e) {
-            $this->errors[] = $this->langs->trans('ECommerceErrorrCeateRemoteLivraison');
+            $this->errors[] = $this->langs->trans('ECommerceErrorrCeateRemoteLivraison').': '.$e->getMessage();
         }
         return false;
     }

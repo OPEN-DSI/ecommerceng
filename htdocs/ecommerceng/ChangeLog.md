@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.10.0
+
+- Correction sur la precision de messages d'erreurs lors de la synchro
+
 ## 4.0.9.0
 
 - Corrections suite au changement du format des données reçues par l'API Woocommerce depuis sa mise à jour en 2.0.0
