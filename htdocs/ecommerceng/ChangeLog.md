@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.12.0
+
+- Correction de la liste des catégories d'une variante d'un produit récuperées depuis ECommerce.
+
 ## 4.0.11.0
 
 - Correction d'une erreur de frappe sur le log system lors de la synchro du stock, pendant la synchro des produits, de ECommerce vers Dolibarr.

@@ -762,7 +762,7 @@ class eCommerceRemoteAccessWoocommerce
                                     'enachat' => 1,
                                     'finished' => 1,    // 1 = manufactured, 0 = raw material
                                     'canvas' => $canvas,
-                                    'categories' => $product->categories,
+                                    'categories' => $categories,
                                     'tax_rate' => $this->getTaxRate($variation->tax_class, $variation->tax_status),
                                     'price_min' => $variation->price,
                                     'fk_country' => '',
