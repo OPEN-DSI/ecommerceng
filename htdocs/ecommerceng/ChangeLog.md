@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.13.0
+
+- Correction du test d'un produit deja existant par sa Ref lors de la synchro ECommerce vers Dolibarr.
+
 ## 4.0.12.0
 
 - Correction de la liste des catégories d'une variante d'un produit récuperées depuis ECommerce.

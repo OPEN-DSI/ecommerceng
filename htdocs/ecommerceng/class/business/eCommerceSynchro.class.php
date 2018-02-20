@@ -1531,15 +1531,14 @@ class eCommerceSynchro
                     $dBProduct = new Product($this->db);
 
                     //check if product exists in eCommerceProduct (with remote id)
-                    $idProduct = '';
                     $synchExists = $this->eCommerceProduct->fetchByRemoteId($productArray['remote_id'], $this->eCommerceSite->id);
                     if ($synchExists > 0) {
-                        $idProduct = $this->eCommerceProduct->fk_product;
+                        $dBProduct->id = $this->eCommerceProduct->fk_product;
                     } else {
                         // First, we check object does not alreay exists. If not, we create it, if it exists, update it.
                         $refExists = $dBProduct->fetch('', dol_string_nospecial(trim($productArray['ref'])));
-                        if ($refExists > 0 && $this->eCommerceProduct->fetchByProductId($dBProduct->id, $this->eCommerceSite->id) > 0) {
-                            $refExists = '';
+                        if ($refExists > 0) {
+                            $synchExists = $this->eCommerceProduct->fetchByProductId($dBProduct->id, $this->eCommerceSite->id);
                         }
                     }
 
@@ -1566,7 +1565,7 @@ class eCommerceSynchro
                         }
                     }
 
-                    if ($refExists > 0 && isset($dBProduct->id))
+                    if (($refExists > 0 || $synchExists > 0) && isset($dBProduct->id))
                     {
                         //update
                         $result = $dBProduct->update($dBProduct->id, $this->user);
