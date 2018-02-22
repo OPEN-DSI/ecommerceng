@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.14.0
+
+- Precision sur les messages d'erreurs lors de la synchro des produits.
+
 ## 4.0.13.0
 
 - Correction du test d'un produit deja existant par sa Ref lors de la synchro ECommerce vers Dolibarr.

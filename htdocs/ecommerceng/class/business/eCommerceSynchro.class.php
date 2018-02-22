@@ -1565,7 +1565,7 @@ class eCommerceSynchro
                         }
                     }
 
-                    if (($refExists > 0 || $synchExists > 0) && isset($dBProduct->id))
+                    if ($dBProduct->id > 0)
                     {
                         //update
                         $result = $dBProduct->update($dBProduct->id, $this->user);
@@ -1608,6 +1608,7 @@ class eCommerceSynchro
                             $error++;
                             $this->error=$this->langs->trans('ECommerceSynchProductUpdateError').' '.$dBProduct->error;
                             $this->errors[]=$this->error;
+                            $this->errors = array_merge($this->errors, $dBProduct->errors);
                         }
 
                         // We must set the initial stock
@@ -1635,6 +1636,7 @@ class eCommerceSynchro
                                 	$error++;
 	                                $this->error=$this->langs->trans('ECommerceSynchMouvementStockChangeError').' '.$movement->error;
                                     $this->errors[] = $this->error;
+                                    $this->errors = array_merge($this->errors, $movement->errors);
     	                        }
                             }
                         }
@@ -1664,6 +1666,7 @@ class eCommerceSynchro
                             if ($dBProduct->error == 'ErrorProductAlreadyExists') $this->error=$this->langs->trans('ECommerceSynchProductCreateError').' '.$this->langs->trans($dBProduct->error, $dBProduct->ref);
                             else $this->error=$this->langs->trans('ECommerceSynchProductCreateError').' '.$dBProduct->error;
                             $this->errors[] = $this->error;
+                            $this->errors = array_merge($this->errors, $dBProduct->errors);
                         }
 
                         // We must set the initial stock
@@ -1690,6 +1693,7 @@ class eCommerceSynchro
                                 $error++;
                                 $this->error=$this->langs->trans('ECommerceSynchMouvementStockChangeError').' '.$movement->error;
                                 $this->errors[] = $this->error;
+                                $this->errors = array_merge($this->errors, $movement->errors);
                             }
                         }
                     }
@@ -1774,6 +1778,7 @@ class eCommerceSynchro
                                 $error++;
                                 $this->error = $this->langs->trans('ECommerceSyncheCommerceProductUpdateError') . ' ' . $productArray['label'];
                                 $this->errors[] = $this->error;
+                                $this->errors = array_merge($this->errors, $this->eCommerceProduct->errors);
                                 dol_syslog($this->error, LOG_WARNING);
                             }
                         }
@@ -1792,6 +1797,7 @@ class eCommerceSynchro
                                 $error++;
                                 $this->error = $this->langs->trans('ECommerceSyncheCommerceProductCreateError') . ' ' . $productArray['label'].', '.$this->eCommerceProduct->error;
                                 $this->errors[] = $this->error;
+                                $this->errors = array_merge($this->errors, $this->eCommerceProduct->errors);
                                 dol_syslog($this->error, LOG_WARNING);
                             }
                         }
