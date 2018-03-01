@@ -1534,6 +1534,11 @@ class eCommerceSynchro
                     $synchExists = $this->eCommerceProduct->fetchByRemoteId($productArray['remote_id'], $this->eCommerceSite->id);
                     if ($synchExists > 0) {
                         $dBProduct->id = $this->eCommerceProduct->fk_product;
+                        $refExists = $dBProduct->fetch($dBProduct->id);
+                        if ($refExists <= 0) {
+                            $dBProduct->id = 0;
+                            $synchExists = 0;
+                        }
                     } else {
                         // First, we check object does not alreay exists. If not, we create it, if it exists, update it.
                         $refExists = $dBProduct->fetch('', dol_string_nospecial(trim($productArray['ref'])));
