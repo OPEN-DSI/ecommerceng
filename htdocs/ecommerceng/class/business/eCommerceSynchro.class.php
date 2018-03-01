@@ -1556,8 +1556,6 @@ class eCommerceSynchro
                     $dBProduct->context['fromsyncofecommerceid'] = $this->eCommerceSite->id;
                     $dBProduct->ref_ext = $this->eCommerceSite->name.'-'.$productArray['remote_id'];
                     $dBProduct->url = $productArray['url'];
-                    if ($conf->barcode->enabled)
-                        $dBProduct->barcode = -1;
 
                     if (is_array($productArray['extrafields'])) {
                         foreach ($productArray['extrafields'] as $extrafield => $extrafield_value) {
@@ -1646,6 +1644,8 @@ class eCommerceSynchro
                         //create
                         $dBProduct->canvas = $productArray['canvas'];
                         $dBProduct->note = 'Initialy created from '.$this->eCommerceSite->name;
+                        if ($conf->barcode->enabled)
+                            $dBProduct->barcode = -1;
 
                         $result = $dBProduct->create($this->user);
                         if ($result >= 0)

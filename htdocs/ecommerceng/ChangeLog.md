@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 4.0.15.0
+
+- Generation automatique du code barre que lors de la creation du produit sur Dolibarr lors de la synchro des produits.
+
 ## 4.0.14.0
 
 - Precision sur les messages d'erreurs lors de la synchro des produits.
