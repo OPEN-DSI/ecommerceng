@@ -27,6 +27,10 @@ ECommerceWoocommerceUpdateRemoteStockProduct=Erreur de mise à jour des stocks d
 ECommerceWoocommerceUpdateRemoteStockProductVariation=Erreur de mise à jour des stocks du produit distant 'id:%s' sur le site '%s': %s
 ECommerceWoocommerceGetAllWoocommerceTaxClass=Erreur de récupération des données des classes de taxes sur le site '%s': %s
 ECommerceWoocommerceGetWoocommerceTaxes=Erreur de récupération des données des taxes sur le site '%s': %s
+ECommerceWoocommerceUpdateRemoteSocieteLink=Erreur de mise à jour du lien de la société 'id:%s' sur le site '%s': %s
+ECommerceWoocommerceUpdateRemoteCommandeLink=Erreur de mise à jour du lien de la commande 'id:%s' sur le site '%s': %s
+ECommerceWoocommerceUpdateRemoteProductLink=Erreur de mise à jour du lien du produit 'id:%s' sur le site '%s': %s
+ECommerceWoocommerceUpdateRemoteSocpeopleLink=Erreur de mise à jour du lien du contact 'id:%s' sur le site '%s': %s
 
 ECommercengWoocommerceStatus=Statut pour le site "%s"
 ECommercengWoocommerceDescription=Description boutique

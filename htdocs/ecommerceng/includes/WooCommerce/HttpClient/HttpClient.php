@@ -315,24 +315,22 @@ class HttpClient
     {
         // Any non-200/201/202 response code indicates an error.
         if (!\in_array($this->response->getCode(), ['200', '201', '202'])) {
-            // Modification - OpenDsi - Begin
-            $errors = !empty($parsedResponse['errors']) ? $parsedResponse['errors'] : $parsedResponse;
+            $errors = isset($parsedResponse->errors) ? $parsedResponse->errors : $parsedResponse;
 
             if (is_array($errors)) {
-                if (!empty($errors[0])) {
-                    $errorMessage = $errors[0]['message'];
-                    $errorCode = $errors[0]['code'];
-                } else {
-                    $errorMessage = $errors['message'];
-                    $errorCode = $errors['code'];
-                }
+                $errorMessage = $errors[0]['message'];
+                $errorCode    = $errors[0]['code'];
             } else {
-                $errorMessage = 'N/A';
-                $errorCode    = 'N/A';
+                $errorMessage = $errors->message;
+                $errorCode    = $errors->code;
             }
-            // Modification - OpenDsi - End
 
-            throw new HttpClientException(\sprintf('Error: %s [%s]', $errorMessage, $errorCode), $this->response->getCode(), $this->request, $this->response);
+            throw new HttpClientException(
+                \sprintf('Error: %s [%s]', $errorMessage, $errorCode),
+                $this->response->getCode(),
+                $this->request,
+                $this->response
+            );
         }
     }
 

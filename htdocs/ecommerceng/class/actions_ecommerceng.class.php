@@ -96,8 +96,8 @@ class ActionsECommerceNg
     {
         global $conf, $user, $langs, $db;
 
-        if ((in_array('expeditioncard', explode(':', $parameters['context'])) && $action == 'confirm_valid') ||
-            (in_array('invoicecard', explode(':', $parameters['context'])) && $action == 'confirm_valid')) {
+        if ((in_array('expeditioncard', explode(':', $parameters['context'])) && ($action == 'confirm_valid' || $action == 'builddoc')) ||
+            (in_array('invoicecard', explode(':', $parameters['context'])) && ($action == 'confirm_valid' || $action == 'builddoc'))) {
             if (!empty($conf->global->ECOMMERCENG_ENABLE_SEND_FILE_TO_ORDER)) {
                 $commande_id = 0;
                 $societe_id = 0;
@@ -174,8 +174,8 @@ class ActionsECommerceNg
     {
         global $conf, $user, $langs, $db;
 
-        if ((in_array('expeditioncard', explode(':', $parameters['context'])) && $action == 'confirm_valid') ||
-            (in_array('invoicecard', explode(':', $parameters['context'])) && $action == 'confirm_valid')) {
+        if ((in_array('expeditioncard', explode(':', $parameters['context'])) && ($action == 'confirm_valid' || $action == 'builddoc')) ||
+            (in_array('invoicecard', explode(':', $parameters['context'])) && ($action == 'confirm_valid' || $action == 'builddoc'))) {
             if (!empty($conf->global->ECOMMERCENG_ENABLE_SEND_FILE_TO_ORDER)) {
                 $commande_id = 0;
                 $societe_id = 0;

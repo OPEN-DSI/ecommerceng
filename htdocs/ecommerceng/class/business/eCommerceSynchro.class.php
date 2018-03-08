@@ -1562,6 +1562,8 @@ class eCommerceSynchro
                     $dBProduct->ref_ext = $this->eCommerceSite->name.'-'.$productArray['remote_id'];
                     $dBProduct->url = $productArray['url'];
 
+                    if (!isset($dBProduct->stock_reel)) $dBProduct->stock_reel = 0;
+
                     if (is_array($productArray['extrafields'])) {
                         foreach ($productArray['extrafields'] as $extrafield => $extrafield_value) {
                             $dBProduct->array_options['options_'.$extrafield] = $extrafield_value;
@@ -1615,32 +1617,31 @@ class eCommerceSynchro
                         }
 
                         // We must set the initial stock
-                        if ($this->eCommerceSite->stock_sync_direction == 'ecommerce2dolibarr' && ($productArray['stock_qty'] != $dBProduct->stock_reel)) // Note: $dBProduct->stock_reel is 0 after a creation
-                        {
-                            dol_syslog("Stock for product updated is ".$productArray['stock_qty']." in ecommerce, but ".$dBProduct->stock_reel." in Dolibarr, we must update it");
-                            if (empty($this->eCommerceSite->fk_warehouse))
+                        if ($dBProduct->type == 0) {
+                            if ($this->eCommerceSite->stock_sync_direction == 'ecommerce2dolibarr' && ($productArray['stock_qty'] != $dBProduct->stock_reel)) // Note: $dBProduct->stock_reel is 0 after a creation
                             {
-                                $error++;
-                                $this->errors[]='SetupOfWarehouseNotDefinedForThisSite';
-                            }
+                                dol_syslog("Stock for product updated is " . $productArray['stock_qty'] . " in ecommerce, but " . $dBProduct->stock_reel . " in Dolibarr, we must update it");
+                                if (empty($this->eCommerceSite->fk_warehouse)) {
+                                    $error++;
+                                    $this->errors[] = 'SetupOfWarehouseNotDefinedForThisSite';
+                                }
 
-                            // Update/init stock
-                            if (! $error)
-                            {
-	                            include_once DOL_DOCUMENT_ROOT.'/product/stock/class/mouvementstock.class.php';
-    	                        $movement = new MouvementStock($this->db);
-        	                    $movement->context['fromsyncofecommerceid'] = $this->eCommerceSite->id;
+                                // Update/init stock
+                                if (!$error) {
+                                    include_once DOL_DOCUMENT_ROOT . '/product/stock/class/mouvementstock.class.php';
+                                    $movement = new MouvementStock($this->db);
+                                    $movement->context['fromsyncofecommerceid'] = $this->eCommerceSite->id;
 
-            	                $lot=null;
-                	            if ($dBProduct->status_batch) $lot='000000';
-                    	        $result = $movement->reception($this->user, $dBProduct->id, $this->eCommerceSite->fk_warehouse, ($productArray['stock_qty'] - $dBProduct->stock_reel), 0, '(StockUpdateFromeCommerceSync)', '', '', $lot);
-                        	    if ($result <= 0)
-                            	{
-                                	$error++;
-	                                $this->error=$this->langs->trans('ECommerceSynchMouvementStockChangeError').' '.$movement->error;
-                                    $this->errors[] = $this->error;
-                                    $this->errors = array_merge($this->errors, $movement->errors);
-    	                        }
+                                    $lot = null;
+                                    if ($dBProduct->status_batch) $lot = '000000';
+                                    $result = $movement->reception($this->user, $dBProduct->id, $this->eCommerceSite->fk_warehouse, ($productArray['stock_qty'] - $dBProduct->stock_reel), 0, '(StockUpdateFromeCommerceSync)', '', '', $lot);
+                                    if ($result <= 0) {
+                                        $error++;
+                                        $this->error = $this->langs->trans('ECommerceSynchMouvementStockChangeError') . ' ' . $movement->error;
+                                        $this->errors[] = $this->error;
+                                        $this->errors = array_merge($this->errors, $movement->errors);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1675,30 +1676,30 @@ class eCommerceSynchro
                         }
 
                         // We must set the initial stock
-                        if (! $error && $this->eCommerceSite->stock_sync_direction == 'ecommerce2dolibarr' && ($productArray['stock_qty'] != $dBProduct->stock_reel)) // Note: $dBProduct->stock_reel is 0 after a creation
-                        {
-                            dol_syslog("Stock for product created is ".$productArray['stock_qty']." in ecommerce, but ".$dBProduct->stock_reel." in Dolibarr, we must update it");
-                            if (empty($this->eCommerceSite->fk_warehouse))
+                        if ($dBProduct->type == 0) {
+                            if (!$error && $this->eCommerceSite->stock_sync_direction == 'ecommerce2dolibarr' && ($productArray['stock_qty'] != $dBProduct->stock_reel)) // Note: $dBProduct->stock_reel is 0 after a creation
                             {
-                                $error++;
-                                $this->errors[]='SetupOfWarehouseNotDefinedForThisSite';
-                                break;
-                            }
+                                dol_syslog("Stock for product created is " . $productArray['stock_qty'] . " in ecommerce, but " . $dBProduct->stock_reel . " in Dolibarr, we must update it");
+                                if (empty($this->eCommerceSite->fk_warehouse)) {
+                                    $error++;
+                                    $this->errors[] = 'SetupOfWarehouseNotDefinedForThisSite';
+                                    break;
+                                }
 
-                            // Update/init stock
-                            include_once DOL_DOCUMENT_ROOT.'/product/stock/class/mouvementstock.class.php';
-                            $movement = new MouvementStock($this->db);
-                            $movement->context['fromsyncofecommerceid'] = $this->eCommerceSite->id;
+                                // Update/init stock
+                                include_once DOL_DOCUMENT_ROOT . '/product/stock/class/mouvementstock.class.php';
+                                $movement = new MouvementStock($this->db);
+                                $movement->context['fromsyncofecommerceid'] = $this->eCommerceSite->id;
 
-                            $lot=null;
-                            if ($dBProduct->status_batch) $lot='000000';
-                            $result = $movement->reception($this->user, $dBProduct->id, $this->eCommerceSite->fk_warehouse, ($productArray['stock_qty'] - $dBProduct->stock_reel), 0, '(StockInitFromeCommerceSync)', '', '', $lot);
-                            if ($result <= 0)
-                            {
-                                $error++;
-                                $this->error=$this->langs->trans('ECommerceSynchMouvementStockChangeError').' '.$movement->error;
-                                $this->errors[] = $this->error;
-                                $this->errors = array_merge($this->errors, $movement->errors);
+                                $lot = null;
+                                if ($dBProduct->status_batch) $lot = '000000';
+                                $result = $movement->reception($this->user, $dBProduct->id, $this->eCommerceSite->fk_warehouse, ($productArray['stock_qty'] - $dBProduct->stock_reel), 0, '(StockInitFromeCommerceSync)', '', '', $lot);
+                                if ($result <= 0) {
+                                    $error++;
+                                    $this->error = $this->langs->trans('ECommerceSynchMouvementStockChangeError') . ' ' . $movement->error;
+                                    $this->errors[] = $this->error;
+                                    $this->errors = array_merge($this->errors, $movement->errors);
+                                }
                             }
                         }
                     }
@@ -1748,14 +1749,16 @@ class eCommerceSynchro
                         if (!empty($conf->global->ECOMMERCENG_ENABLE_SYNCHRO_IMAGES)) {
                             if (is_array($productArray['images'])) {
                                 foreach ($productArray['images'] as $image) {
-                                    $ret = ecommerceng_download_image($image, $dBProduct, $error_message);
+                                    if (!preg_match('@woocommerce/assets/images@i', $image['url'])) {
+                                        $ret = ecommerceng_download_image($image, $dBProduct, $error_message);
 
-                                    if (!$ret) {
-                                        $error++;
-                                        $error_label = $this->langs->trans('ECommerceSyncheCommerceProductDownloadImageError',
-                                                implode(',', $image), $dBProduct->id, $productArray['remote_id'], $this->eCommerceSite->name) . ': ' . $error_message;
-                                        $this->errors[] = $error_label;
-                                        dol_syslog($error_label, LOG_ERR);
+                                        if (!$ret) {
+                                            $error++;
+                                            $error_label = $this->langs->trans('ECommerceSyncheCommerceProductDownloadImageError',
+                                                    implode(',', $image), $dBProduct->id, $productArray['remote_id'], $this->eCommerceSite->name) . ': ' . $error_message;
+                                            $this->errors[] = $error_label;
+                                            dol_syslog($error_label, LOG_ERR);
+                                        }
                                     }
                                 }
                             }
@@ -3118,7 +3121,11 @@ class eCommerceSynchro
                         $dbProduct = new Product($this->db);
                         if ($dbProduct->fetch($this->eCommerceProduct->fk_product) > 0)
                         {
-                            $resultdelete = $dbProduct->delete();
+                            if ((float)DOL_VERSION < 6.0) {
+                                $resultdelete = $dbProduct->delete();
+                            } else {
+                                $resultdelete = $dbProduct->delete($this->user);
+                            }
                             if ($resultdelete > 0)
                                 $dolObjectsDeleted++;
                         }

@@ -289,6 +289,15 @@ class InterfaceECommerceng
 
             $categories = GETPOST('categories');
 
+            if (!isset($_POST['categories'])) {
+                $categories = array();
+                $c = new Categorie($this->db);
+                $cats = $c->containing($object->id, Categorie::TYPE_PRODUCT);
+                foreach ($cats as $cat) {
+                    $categories[] = $cat->id;
+                }
+            }
+
             $eCommerceSite = new eCommerceSite($this->db);
 			$sites = $eCommerceSite->listSites('object');
 

@@ -318,18 +318,20 @@ class eCommerceRemoteAccessWoocommerce
                     $id = $product->id;
                     $result[$id] = $id;
                     $last_update[$id] = $date_product->format('Y-m-d H:i:s');
+                    $update = true;
                 }
 
                 // Variations
-                if (!$update) {
+                if ($update) {
                     foreach ($product->variations as $variation) {
-                        $date_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->updated_at) ? $variation->updated_at : $variation->created_at);
+                        // $date_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->updated_at) ? $variation->updated_at : $variation->created_at);
 
-                        if ((!isset($from_date) || $from_date < $date_variation) && (!isset($to_date) || $date_variation <= $to_date)) {
-                            $id = $product->id.'|'.$variation->id;
+                        //if ((!isset($from_date) || $from_date < $date_variation) && (!isset($to_date) || $date_variation <= $to_date)) {
+                            $id = $product->id . '|' . $variation->id;
                             $result[$id] = $id;
-                            $last_update[$id] = $date_variation->format('Y-m-d H:i:s');
-                        }
+                            $last_update[$id] = $date_product->format('Y-m-d H:i:s');
+                            //$last_update[$id] = $date_variation->format('Y-m-d H:i:s');
+                        //}
                     }
                 }
             }
@@ -743,7 +745,8 @@ class eCommerceRemoteAccessWoocommerce
                                     }
                                 }
 
-                                $last_update_product_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->date_modified_gmt) ? $variation->date_modified_gmt : $variation->date_created_gmt);
+                                //$last_update_product_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->date_modified_gmt) ? $variation->date_modified_gmt : $variation->date_created_gmt);
+                                $last_update_product_variation = $last_update_product;
 
                                 $remote_id = $product->id . '|' . $variation->id;  // id product | id variation
                                 $last_update = $last_update_product_variation->format('Y-m-d H:i:s');
@@ -1163,7 +1166,7 @@ class eCommerceRemoteAccessWoocommerce
     public function updateRemoteProduct($remote_id, $object)
     {
         dol_syslog(__METHOD__ . ": Update the remote product ID $remote_id for Dolibarr product ID {$object->id} for site ID {$this->site->id}", LOG_DEBUG);
-        global $conf, $langs;
+        global $conf, $langs, $user;
 
         $isProductVariation = false;
         $remote_product_id = $remote_id;
@@ -1343,11 +1346,15 @@ class eCommerceRemoteAccessWoocommerce
                 'weight' => (!empty($totalWeight) ? $totalWeight : ''),                               // string       Variation weight (kg).
                 //'dimensions' => $dimensions,                            // object       Variation dimensions. See Product variation - Dimensions properties
                 //'shipping_class' => '',                                 // string       Shipping class slug.
-                'image' => (!empty($images) ? $images[0] : ''),                                     // object       Variation image data. See Product variation - Image properties
+                //'image' => (!empty($images) ? $images[0] : ''),                                     // object       Variation image data. See Product variation - Image properties
                 //'attributes' => $attributes,                            // array        List of attributes. See Product variation - Attributes properties
                 //'menu_order' => '',                                     // integer      Menu order, used to custom sort products.
                 //'meta_data' => $meta_data,                              // array        Meta data. See Product variation - Meta data properties
             ];
+
+            if (!empty($images)) {
+                $variationData['image'] = $images[0];
+            }
 
             // Set tax
             if (!empty($object->array_options["options_ecommerceng_tax_class_{$this->site->id}_{$conf->entity}"])) {
@@ -1362,9 +1369,9 @@ class eCommerceRemoteAccessWoocommerce
             try {
                 $result = $this->client->put("products/$remote_product_id/variations/$remote_product_variation_id", $variationData);
             } catch (HttpClientException $fault) {
-                $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductVariation', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
+                $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductVariation', $remote_product_variation_id, $remote_product_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
                 dol_syslog(__METHOD__ .
-                    ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductVariation', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
+                    ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductVariation', $remote_product_variation_id, $remote_product_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
                     ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
                 return false;
             }
@@ -1492,7 +1499,7 @@ class eCommerceRemoteAccessWoocommerce
                 //'purchase_note'         => '',                                      // string		Optional note to send the customer after purchase.
                 'categories' => $categories,                             // array		List of categories. See Product - Categories properties
                 //'tags'                  => $tags,                                   // array		List of tags. See Product - Tags properties
-                'images' => (!empty($images) ? $images : ''),                                 // object		List of images. See Product - Images properties
+                'images' => (!empty($images) ? $images : array()),                    // object		List of images. See Product - Images properties
                 //'attributes'            => $attributes,			                    // array		List of attributes. See Product - Attributes properties
                 //'default_attributes'    => $default_attributes,			            // array		Defaults variation attributes. See Product - Default attributes properties
                 //'menu_order'            => 0,			                            // integer		Menu order, used to custom sort products.
@@ -1508,12 +1515,24 @@ class eCommerceRemoteAccessWoocommerce
             try {
                 $result = $this->client->put("products/$remote_product_id", $productData);
             } catch (HttpClientException $fault) {
-                $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
+                $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProduct', $remote_product_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
                 dol_syslog(__METHOD__ .
-                    ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
+                    ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProduct', $remote_product_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
                     ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
                 return false;
             }
+        }
+
+        // Update remote link
+        $now = dol_now();
+        $eCommerceProduct = new eCommerceProduct($this->db);
+        $eCommerceProduct->fetchByProductId($object->id, $this->site->id);
+        $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+        $res = $eCommerceProduct->update($user);
+        if ($res < 0) {
+            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error);
+            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error), LOG_ERR);
+            return false;
         }
 
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
@@ -1531,7 +1550,7 @@ class eCommerceRemoteAccessWoocommerce
     public function updateRemoteStockProduct($remote_id, $object)
     {
         dol_syslog(__METHOD__ . ": Update stock of the remote product ID $remote_id for MouvementStock ID {$object->id}, new qty: {$object->qty_after} for site ID {$this->site->id}", LOG_DEBUG);
-        global $langs;
+        global $langs, $user;
 
         if (preg_match('/^(\d+)\|(\d+)$/', $remote_id, $idsProduct) == 1) {
             // Variations
@@ -1570,6 +1589,18 @@ class eCommerceRemoteAccessWoocommerce
             }
         }
 
+        // Update remote link
+        $now = dol_now();
+        $eCommerceProduct = new eCommerceProduct($this->db);
+        $eCommerceProduct->fetchByProductId($object->id, $this->site->id);
+        $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+        $res = $eCommerceProduct->update($user);
+        if ($res < 0) {
+            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error);
+            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error), LOG_ERR);
+            return false;
+        }
+
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1585,7 +1616,7 @@ class eCommerceRemoteAccessWoocommerce
     public function updateRemoteSociete($remote_id, $object)
     {
         dol_syslog(__METHOD__ . ": Update the remote company ID $remote_id for Dolibarr company ID {$object->id} for site ID {$this->site->id}", LOG_DEBUG);
-        global $langs;
+        global $langs, $user;
 
         /*
         // Customer - Meta data properties
@@ -1613,6 +1644,18 @@ class eCommerceRemoteAccessWoocommerce
             return false;
         }
 
+        // Update remote link
+        $now = dol_now();
+        $eCommerceSociete = new eCommerceSociete($this->db);
+        $eCommerceSociete->fetchByFkSociete($object->id, $this->site->id);
+        $eCommerceSociete->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+        $res = $eCommerceSociete->update($user);
+        if ($res < 0) {
+            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteSocieteLink', $object->id, $this->site->name, $eCommerceSociete->error);
+            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSocieteLink', $object->id, $this->site->name, $eCommerceSociete->error), LOG_ERR);
+            return false;
+        }
+
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1628,7 +1671,7 @@ class eCommerceRemoteAccessWoocommerce
     public function updateRemoteSocpeople($remote_id, $object)
     {
         dol_syslog(__METHOD__ . ": Update the remote contact ID $remote_id for Dolibarr contact ID {$object->id} for site ID {$this->site->id}", LOG_DEBUG);
-        global $conf, $langs;
+        global $conf, $langs, $user;
 
         // Get societe
         //require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
@@ -1688,6 +1731,18 @@ class eCommerceRemoteAccessWoocommerce
             }
         }
 
+        // Update remote link
+        $now = dol_now();
+        $eCommerceSocpeople = new eCommerceSocpeople($this->db);
+        $eCommerceSocpeople->fetchByFkSocpeople($object->id, $this->site->id);
+        $eCommerceSocpeople->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+        $res = $eCommerceSocpeople->update($user);
+        if ($res < 0) {
+            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteSocpeopleLink', $object->id, $this->site->name, $eCommerceSocpeople->error);
+            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSocpeopleLink', $object->id, $this->site->name, $eCommerceSocpeople->error), LOG_ERR);
+            return false;
+        }
+
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1703,7 +1758,7 @@ class eCommerceRemoteAccessWoocommerce
     public function updateRemoteCommande($remote_id, $object)
     {
         dol_syslog(__METHOD__ . ": Update the remote order ID $remote_id for Dolibarr order ID {$object->id} for site ID {$this->site->id}", LOG_DEBUG);
-        global $conf, $langs;
+        global $conf, $langs, $user;
 
         $status = '';
         switch ($object->statut) {
@@ -1745,6 +1800,18 @@ class eCommerceRemoteAccessWoocommerce
                     ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
                 return false;
             }
+        }
+
+        // Update remote link
+        $now = dol_now();
+        $eCommerceCommande = new eCommerceCommande($this->db);
+        $eCommerceCommande->fetchByCommandeId($object->id, $this->site->id);
+        $eCommerceCommande->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+        $res = $eCommerceCommande->update($user);
+        if ($res < 0) {
+            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteCommandeLink', $object->id, $this->site->name, $eCommerceCommande->error);
+            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteCommandeLink', $object->id, $this->site->name, $eCommerceCommande->error), LOG_ERR);
+            return false;
         }
 
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
@@ -2008,12 +2075,16 @@ class eCommerceRemoteAccessWoocommerce
         $commandeData = [
             'meta_data' => [
                 [
-                    'key' => 'file_for_' . $object->element,
-                    'value' => [
-                        'id' => $result['id'],
-                        'link' => $result['link'],
-                        'source_url' => $result['source_url'],
-                    ],
+                    'key' => 'file_for_' . $object->element.'_id',
+                    'value' => $result['id'],
+                ],
+                [
+                    'key' => 'file_for_' . $object->element.'_link',
+                    'value' => $result['link'],
+                ],
+                [
+                    'key' => 'file_for_' . $object->element.'_source_url',
+                    'value' => $result['source_url'],
                 ],
             ]
         ];
