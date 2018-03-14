@@ -322,16 +322,13 @@ class eCommerceRemoteAccessWoocommerce
                 }
 
                 // Variations
-                if ($update) {
-                    foreach ($product->variations as $variation) {
-                        // $date_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->updated_at) ? $variation->updated_at : $variation->created_at);
+                foreach ($product->variations as $variation) {
+                    $date_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->updated_at) ? $variation->updated_at : $variation->created_at);
 
-                        //if ((!isset($from_date) || $from_date < $date_variation) && (!isset($to_date) || $date_variation <= $to_date)) {
-                            $id = $product->id . '|' . $variation->id;
-                            $result[$id] = $id;
-                            $last_update[$id] = $date_product->format('Y-m-d H:i:s');
-                            //$last_update[$id] = $date_variation->format('Y-m-d H:i:s');
-                        //}
+                    if ($update || ((!isset($from_date) || $from_date < $date_variation) && (!isset($to_date) || $date_variation <= $to_date))) {
+                        $id = $product->id . '|' . $variation->id;
+                        $result[$id] = $id;
+                        $last_update[$id] = $date_product > $date_variation ? $date_product->format('Y-m-d H:i:s') : $date_variation->format('Y-m-d H:i:s');
                     }
                 }
             }
@@ -745,8 +742,8 @@ class eCommerceRemoteAccessWoocommerce
                                     }
                                 }
 
-                                //$last_update_product_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->date_modified_gmt) ? $variation->date_modified_gmt : $variation->date_created_gmt);
-                                $last_update_product_variation = $last_update_product;
+                                $last_update_product_variation = $this->getDateTimeFromGMTDateTime(!empty($variation->date_modified_gmt) ? $variation->date_modified_gmt : $variation->date_created_gmt);
+                                $last_update_product_variation = $last_update_product > $last_update_product_variation ? $last_update_product : $last_update_product_variation;
 
                                 $remote_id = $product->id . '|' . $variation->id;  // id product | id variation
                                 $last_update = $last_update_product_variation->format('Y-m-d H:i:s');
@@ -2429,15 +2426,17 @@ class eCommerceRemoteAccessWoocommerce
         $request = [];
         $request_groups = [];
 
-        foreach ($remoteObject as $remote_object_id) {
-            if ($toNb > 0 && $idx > $toNb) break;
+        if (isset($remoteObject)) {
+            foreach ($remoteObject as $remote_object_id) {
+                if ($toNb > 0 && $idx > $toNb) break;
 
-            if (($idx++ % $nb_max_by_request) == 0) {
-                if (count($request)) $request_groups[] = $request;
-                $request = [];
+                if (($idx++ % $nb_max_by_request) == 0) {
+                    if (count($request)) $request_groups[] = $request;
+                    $request = [];
+                }
+
+                $request[] = $remote_object_id;
             }
-
-            $request[] = $remote_object_id;
         }
         if (count($request)) $request_groups[] = $request;
 

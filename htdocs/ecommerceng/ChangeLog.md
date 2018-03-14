@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 4.0.17.0
+
+- Correction d'un warning lors de la syncho.
+- Correction de la liste des variantes du produit à mettre à jour qui se base la date de mise à jour de la variante (mise a jour sur la modification du stock via une commande) ou la date de mise à jour du produit parent (pour les autres cas).
+
 ## 4.0.16.0
 
 - Correction de la fonction de suppression des produits dans la "Partie dangereuse" de la fiche du site, dut à un changement de paramètres passés à la fonction "delete" de la classe "Product" de la version 5.0 à la 6.0.
