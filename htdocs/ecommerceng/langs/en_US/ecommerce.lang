@@ -212,3 +212,10 @@ ECommerceRemoteAccessUpdateRemoteStockProductVariation=Erreur de mise à jour de
 ECommerceSyncheCommerceProductDownloadImageError=Erreur de récupération de l'image (%s) pour le produit 'id:%s' du produit distant 'id:%s' sur le site '%s'
 
 ECommerceNoDescForProductLine=L'api n'a pas pu récupérer la description du produit
+
+ECommerceUpdateRemoteCompanyLink=Erreur de mise à jour du lien de la société 'id:%s' sur le site '%s': %s
+ECommerceUpdateRemoteSocpeopleLink=Erreur de mise à jour du lien du contact 'id:%s' sur le site '%s': %s
+ECommerceUpdateRemoteProductLink=Erreur de mise à jour du lien du produit 'id:%s' sur le site '%s': %s
+ECommerceCreateRemoteProductLink=Erreur de la création du lien du produit 'id:%s' sur le site '%s': %s
+ECommerceUpdateRemoteOrderLink=Erreur de mise à jour du lien de la commande 'id:%s' sur le site '%s': %s
+ECommerceUpdateRemoteInvoiceLink=Erreur de mise à jour du lien de la facture 'id:%s' sur le site '%s': %s

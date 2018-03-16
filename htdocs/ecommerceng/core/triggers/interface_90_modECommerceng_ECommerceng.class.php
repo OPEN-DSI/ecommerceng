@@ -162,6 +162,19 @@ class InterfaceECommerceng
         				        $this->errors=$eCommerceSynchro->eCommerceRemoteAccess->errors;
         				    }
         			    }
+
+                        if (! $error) {
+                            //eCommerce update link
+                            $now = dol_now();
+//                            $eCommerceSociete->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                            if ($eCommerceSociete->update($user) < 0) {
+                                $error++;
+                                $error_msg = $langs->trans('ECommerceUpdateRemoteCompanyLink', $object->id, $site->name, $eCommerceSociete->error);
+                                $this->errors[] = $error_msg;
+                                $this->errors = array_merge($this->errors, $eCommerceSociete->errors);
+                                dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                            }
+                        }
     				}
     				else
     				{
@@ -249,6 +262,19 @@ class InterfaceECommerceng
         				        $this->errors=$eCommerceSynchro->eCommerceRemoteAccess->errors;
         				    }
                         }
+
+                        if (! $error) {
+                            //eCommerce update link
+                            $now = dol_now();
+//                            $eCommerceSocpeople->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                            if ($eCommerceSocpeople->update($user) < 0) {
+                                $error++;
+                                $error_msg = $langs->trans('ECommerceUpdateRemoteSocpeopleLink', $object->id, $site->name, $eCommerceSocpeople->error);
+                                $this->errors[] = $error_msg;
+                                $this->errors = array_merge($this->errors, $eCommerceSocpeople->errors);
+                                dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                            }
+                        }
                     }
                     else
                     {
@@ -287,14 +313,22 @@ class InterfaceECommerceng
         {
             $this->db->begin();
 
-            $categories = GETPOST('categories');
-
-            if (!isset($_POST['categories'])) {
-                $categories = array();
-                $c = new Categorie($this->db);
-                $cats = $c->containing($object->id, Categorie::TYPE_PRODUCT);
-                foreach ($cats as $cat) {
-                    $categories[] = $cat->id;
+            // Get current categories and subcategories
+            require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+            $c = new Categorie($this->db);
+            $categories = array();
+            if (isset($_POST['categories'])) {
+                $cats = GETPOST('categories');
+            } else {
+                $cats = $c->containing($object->id, Categorie::TYPE_PRODUCT, 'id');
+            }
+            foreach ($cats as $cat) {
+                $c->id = $cat;
+                $catslist = $c->get_all_ways();
+                if (isset($catslist[0])) {
+                    foreach ($catslist[0] as $catinfos) {
+                        $categories[$catinfos->id] = $catinfos->id;
+                    }
                 }
             }
 
@@ -314,69 +348,83 @@ class InterfaceECommerceng
                     continue;
                 }
 
-				if (! $error)
-				{
-    				$eCommerceProduct = new eCommerceProduct($this->db);
-    				$eCommerceProduct->fetchByProductId($object->id, $site->id);
+				if (! $error) {
+                    $eCommerceProduct = new eCommerceProduct($this->db);
+                    $eCommerceProduct->fetchByProductId($object->id, $site->id);
 
-    				if ($eCommerceProduct->remote_id > 0)
-    				{
-		                $eCommerceSynchro = new eCommerceSynchro($this->db, $site);
-        				dol_syslog("Trigger ".$action." try to connect to eCommerce site ".$site->name);
-        				$eCommerceSynchro->connect();
-        				if (count($eCommerceSynchro->errors))
-        				{
-        				    $error++;
-        				    setEventMessages($eCommerceSynchro->error, $eCommerceSynchro->errors, 'errors');
-        				}
+                    if ($eCommerceProduct->remote_id > 0) {
+                        $eCommerceSynchro = new eCommerceSynchro($this->db, $site);
+                        dol_syslog("Trigger " . $action . " try to connect to eCommerce site " . $site->name);
+                        $eCommerceSynchro->connect();
+                        if (count($eCommerceSynchro->errors)) {
+                            $error++;
+                            setEventMessages($eCommerceSynchro->error, $eCommerceSynchro->errors, 'errors');
+                        }
 
-        				if (! $error)
-        				{
+                        if (!$error) {
                             if (!empty($conf->global->PRODUIT_MULTIPRICES)) {
                                 $object->price = $object->multiprices[$site->price_level];
                             }
-        				    $result = $eCommerceSynchro->eCommerceRemoteAccess->updateRemoteProduct($eCommerceProduct->remote_id, $object);
-        				    if (! $result)
-        				    {
-        				        $error++;
-        				        $this->error=$eCommerceSynchro->eCommerceRemoteAccess->error;
-        				        $this->errors=$eCommerceSynchro->eCommerceRemoteAccess->errors;
-        				    }
-        				}
-    				}
-    				else
-    				{
-                        // Get current categories
-                        require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
-                        $c = new Categorie($this->db);
-                        $catids = $c->containing($object->id, Categorie::TYPE_PRODUCT, 'id');
-
-                        if (in_array($site->fk_cat_product, $catids)) {
-                            dol_syslog("Product with id ".$object->id." is not linked to an ecommerce record but has category flag to push on eCommerce. So we push it");
-
-                            $eCommerceSynchro = new eCommerceSynchro($this->db, $site);
-                            dol_syslog("Trigger " . $action . " try to connect to eCommerce site " . $site->name);
-                            $eCommerceSynchro->connect();
-                            if (count($eCommerceSynchro->errors)) {
-                                $error++;
-                                setEventMessages($eCommerceSynchro->error, $eCommerceSynchro->errors, 'errors');
-                            }
-
-                            if (!empty($conf->global->PRODUIT_MULTIPRICES)) {
-                                $object->price = $object->multiprices[$site->price_level];
-                            }
-
-                            $result = $eCommerceSynchro->eCommerceRemoteAccess->createRemoteProduct($object);
+                            $result = $eCommerceSynchro->eCommerceRemoteAccess->updateRemoteProduct($eCommerceProduct->remote_id, $object);
                             if (!$result) {
                                 $error++;
                                 $this->error = $eCommerceSynchro->eCommerceRemoteAccess->error;
                                 $this->errors = $eCommerceSynchro->eCommerceRemoteAccess->errors;
                             }
-                        } else {
-                            dol_syslog("Product with id ".$object->id." is not linked to an ecommerce record and does not has category flag to push on eCommerce.");
                         }
-    				}
-				}
+
+                        if (!$error) {
+                            //eCommerce update link
+                            $now = dol_now();
+//                            $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                            if ($eCommerceProduct->update($user) < 0) {
+                                $error++;
+                                $error_msg = $langs->trans('ECommerceUpdateRemoteProductLink', $object->id, $site->name, $eCommerceProduct->error);
+                                $this->errors[] = $error_msg;
+                                $this->errors = array_merge($this->errors, $eCommerceProduct->errors);
+                                dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                            }
+                        }
+                    } else {
+                        dol_syslog("Product with id " . $object->id . " is not linked to an ecommerce record but has category flag to push on eCommerce. So we push it");
+
+                        $eCommerceSynchro = new eCommerceSynchro($this->db, $site);
+                        dol_syslog("Trigger " . $action . " try to connect to eCommerce site " . $site->name);
+                        $eCommerceSynchro->connect();
+                        if (count($eCommerceSynchro->errors)) {
+                            $error++;
+                            setEventMessages($eCommerceSynchro->error, $eCommerceSynchro->errors, 'errors');
+                        }
+
+                        if (!empty($conf->global->PRODUIT_MULTIPRICES)) {
+                            $object->price = $object->multiprices[$site->price_level];
+                        }
+
+                        $result = $eCommerceSynchro->eCommerceRemoteAccess->createRemoteProduct($object);
+                        if (!$result) {
+                            $error++;
+                            $this->error = $eCommerceSynchro->eCommerceRemoteAccess->error;
+                            $this->errors = $eCommerceSynchro->eCommerceRemoteAccess->errors;
+                        }
+
+                        if (!$error) {
+                            // Create remote link
+                            $now = dol_now();
+//                            $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                            $eCommerceProduct->fk_product = $object->id;
+                            $eCommerceProduct->fk_site = $site->id;
+                            $eCommerceProduct->remote_id = $result;
+                            $res = $eCommerceProduct->create($user);
+                            if ($res < 0) {
+                                $error++;
+                                $error_msg = $langs->trans('ECommerceCreateRemoteProductLink', $object->id, $site->name, $eCommerceProduct->error);
+                                $this->errors[] = $error_msg;
+                                $this->errors = array_merge($this->errors, $eCommerceProduct->errors);
+                                dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                            }
+                        }
+                    }
+                }
 			}
 
             if ($error)
@@ -446,6 +494,19 @@ class InterfaceECommerceng
         				        $this->errors=$eCommerceSynchro->eCommerceRemoteAccess->errors;
         				    }
                         }
+
+                        if (! $error) {
+                            //eCommerce update link
+                            $now = dol_now();
+//                            $eCommerceCommande->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                            if ($eCommerceCommande->update($user) < 0) {
+                                $error++;
+                                $error_msg = $langs->trans('ECommerceUpdateRemoteOrderLink', $object->id, $site->name, $eCommerceCommande->error);
+                                $this->errors[] = $error_msg;
+                                $this->errors = array_merge($this->errors, $eCommerceCommande->errors);
+                                dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                            }
+                        }
     				}
     				else
     				{
@@ -507,6 +568,19 @@ class InterfaceECommerceng
         	                    $this->errors=$eCommerceSynchro->eCommerceRemoteAccess->errors;
         	                }
     	                }
+
+                        if (! $error) {
+                            //eCommerce update link
+                            $now = dol_now();
+//                            $eCommerceFacture->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                            if ($eCommerceFacture->update($user) < 0) {
+                                $error++;
+                                $error_msg = $langs->trans('ECommerceUpdateRemoteInvoiceLink', $object->id, $site->name, $eCommerceFacture->error);
+                                $this->errors[] = $error_msg;
+                                $this->errors = array_merge($this->errors, $eCommerceFacture->errors);
+                                dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                            }
+                        }
     	            }
     	            else
     	            {
@@ -741,6 +815,7 @@ class InterfaceECommerceng
                             else
                             {
                                 // $result is id of shipment created in magento, we update ref_customer with it.
+                                if ($result === true) $result = $eCommerceCommande->remote_id;
 
                                 // Update ref customer. Do not use update here, we want to update only one field with no side effect on others.
                                 $sqlupdaterefcustmer = "UPDATE ".MAIN_DB_PREFIX."expedition SET";
@@ -749,6 +824,19 @@ class InterfaceECommerceng
                                 $this->db->query($sqlupdaterefcustmer);
 
                                 $object->ref_customer = $result;
+                            }
+
+                            if (! $error && $result !== true) {
+                                //eCommerce update link
+                                $now = dol_now();
+//                                $eCommerceCommande->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                                if ($eCommerceCommande->update($user) < 0) {
+                                    $error++;
+                                    $error_msg = $langs->trans('ECommerceUpdateRemoteOrderLink', $object->id, $site->name, $eCommerceCommande->error);
+                                    $this->errors[] = $error_msg;
+                                    $this->errors = array_merge($this->errors, $eCommerceCommande->errors);
+                                    dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
+                                }
                             }
     		            }
     	            }
@@ -831,6 +919,19 @@ class InterfaceECommerceng
                                     $error++;
                                     $this->error=$eCommerceSynchro->eCommerceRemoteAccess->error;
                                     $this->errors=$eCommerceSynchro->eCommerceRemoteAccess->errors;
+                                }
+                            }
+
+                            if (! $error) {
+                                //eCommerce update link
+                                $now = dol_now();
+//                                $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
+                                if ($eCommerceProduct->update($user) < 0) {
+                                    $error++;
+                                    $error_msg = $langs->trans('ECommerceUpdateRemoteProductLink', $object->id, $site->name, $eCommerceProduct->error);
+                                    $this->errors[] = $error_msg;
+                                    $this->errors = array_merge($this->errors, $eCommerceProduct->errors);
+                                    dol_syslog(__METHOD__ . ': Error:' . $error_msg, LOG_WARNING);
                                 }
                             }
                         }

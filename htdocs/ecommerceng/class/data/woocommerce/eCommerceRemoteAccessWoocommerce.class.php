@@ -1520,18 +1520,6 @@ class eCommerceRemoteAccessWoocommerce
             }
         }
 
-        // Update remote link
-        $now = dol_now();
-        $eCommerceProduct = new eCommerceProduct($this->db);
-        $eCommerceProduct->fetchByProductId($object->id, $this->site->id);
-        $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
-        $res = $eCommerceProduct->update($user);
-        if ($res < 0) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error);
-            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error), LOG_ERR);
-            return false;
-        }
-
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1586,18 +1574,6 @@ class eCommerceRemoteAccessWoocommerce
             }
         }
 
-        // Update remote link
-        $now = dol_now();
-        $eCommerceProduct = new eCommerceProduct($this->db);
-        $eCommerceProduct->fetchByProductId($object->id, $this->site->id);
-        $eCommerceProduct->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
-        $res = $eCommerceProduct->update($user);
-        if ($res < 0) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error);
-            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error), LOG_ERR);
-            return false;
-        }
-
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1638,18 +1614,6 @@ class eCommerceRemoteAccessWoocommerce
             dol_syslog(__METHOD__ .
                 ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSociete', $remote_id, $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
                 ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
-            return false;
-        }
-
-        // Update remote link
-        $now = dol_now();
-        $eCommerceSociete = new eCommerceSociete($this->db);
-        $eCommerceSociete->fetchByFkSociete($object->id, $this->site->id);
-        $eCommerceSociete->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
-        $res = $eCommerceSociete->update($user);
-        if ($res < 0) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteSocieteLink', $object->id, $this->site->name, $eCommerceSociete->error);
-            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSocieteLink', $object->id, $this->site->name, $eCommerceSociete->error), LOG_ERR);
             return false;
         }
 
@@ -1728,18 +1692,6 @@ class eCommerceRemoteAccessWoocommerce
             }
         }
 
-        // Update remote link
-        $now = dol_now();
-        $eCommerceSocpeople = new eCommerceSocpeople($this->db);
-        $eCommerceSocpeople->fetchByFkSocpeople($object->id, $this->site->id);
-        $eCommerceSocpeople->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
-        $res = $eCommerceSocpeople->update($user);
-        if ($res < 0) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteSocpeopleLink', $object->id, $this->site->name, $eCommerceSocpeople->error);
-            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteSocpeopleLink', $object->id, $this->site->name, $eCommerceSocpeople->error), LOG_ERR);
-            return false;
-        }
-
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1799,18 +1751,6 @@ class eCommerceRemoteAccessWoocommerce
             }
         }
 
-        // Update remote link
-        $now = dol_now();
-        $eCommerceCommande = new eCommerceCommande($this->db);
-        $eCommerceCommande->fetchByCommandeId($object->id, $this->site->id);
-        $eCommerceCommande->last_update = dol_print_date($now, '%Y-%m-%d %H:%M:%S');
-        $res = $eCommerceCommande->update($user);
-        if ($res < 0) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceUpdateRemoteCommandeLink', $object->id, $this->site->name, $eCommerceCommande->error);
-            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceUpdateRemoteCommandeLink', $object->id, $this->site->name, $eCommerceCommande->error), LOG_ERR);
-            return false;
-        }
-
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
         return true;
     }
@@ -1840,7 +1780,7 @@ class eCommerceRemoteAccessWoocommerce
     public function createRemoteLivraison($livraison, $remote_order_id)
     {
         dol_syslog(__METHOD__ . ": Desactivated for site ID {$this->site->id}", LOG_DEBUG);
-        return $remote_order_id;
+        return true;
     }
 
     /**
@@ -1848,193 +1788,199 @@ class eCommerceRemoteAccessWoocommerce
      *
      * @param   Product     $object     Object product
      *
-     * @return  boolean                 True or false
+     * @return  boolean|int             False of Id of remote product created
      */
     public function createRemoteProduct($object)
     {
         dol_syslog(__METHOD__ . ": Create product from Dolibarr product ID {$object->id} for site ID {$this->site->id}", LOG_DEBUG);
         global $conf, $langs, $user;
 
-        // Set weight
-        $totalWeight = $object->weight;
-        if ($object->weight_units < 50)   // >50 means a standard unit (power of 10 of official unit), > 50 means an exotic unit (like inch)
-        {
-            $trueWeightUnit = pow(10, $object->weight_units);
-            $totalWeight = sprintf("%f", $object->weight * $trueWeightUnit);
-        }
-
-        // Product - Meta data properties
-        $object->fetch_optionals();
-
-        // Price
-        if (!empty($conf->global->PRODUIT_MULTIPRICES)) {
-            $price_level = !empty($this->site->price_level) ? $this->site->price_level : 1;
-            $price = $object->multiprices[$price_level];
-        } else {
-            $price = $object->price;
-        }
-
-        /*
-        // Product - Downloads properties
-        $downloads = [
-            [
-                'name' => '',       // string     File name.
-                'file' => '',       // string     File URL.
-            ],
-        ];
-
-        // Product - Dimensions properties
-        $dimensions = [
-            'length' => '',     // string   Product length (cm).
-            'width' => '',      // string   Product width (cm).
-            'height' => '',     // string   Product height (cm).
-        ];
-
-        // Product - Categories properties
-        $categories = [
-            [
-                'id' => 0,      // integer  Category ID.
-            ],
-        ];
-
-        // Product - Tags properties
-        $tags = [
-            [
-                'id' => 0,      // integer  Tag ID.
-            ],
-        ];
-
-        // Product - Images properties
-        $images = [
-            [
-                'id' => 0,              // integer	Image ID. Not required
-                'src' => '',            // string	Image URL.
-                'name' => '',           // string	Image name.
-                'alt' => '',            // string	Image alternative text.
-                'position' => 0,        // integer	Image position. 0 means that the image is featured.
-            ],
-        ];
-
-        // Product - Attributes properties
-        $attributes = [
-            [
-                'id' => 0,              // integer	Attribute ID. Not required
-                'name' => '',           // string	Attribute name.
-                'position' => 0,        // integer	Attribute position.
-                'visible' => false,     // boolean	Define if the attribute is visible on the “Additional information” tab in the product’s page. Default is false.
-                'variation' => false,   // boolean	Define if the attribute can be used as variation. Default is false.
-                'options' => [],        // array	List of available term names of the attribute.
-            ],
-        ];
-
-        // Product - Default attributes properties
-        $default_attributes = [
-            'id' => 0,              // integer	Attribute ID. Not required
-            'name' => '',           // string	Attribute name.
-            'option' => '',         // string	Selected attribute term name.
-        ];
-
-        // Product - Meta data properties
-        $meta_data = [
-            'key' => '', // string	Meta key.
-            'value' => '', // string	Meta value.
-        ];
-        */
-
-        // Get categories
-        $eCommerceCategory = new eCommerceCategory($this->db);
-        $cat = new Categorie($this->db);
-        $categories_list = $cat->containing($object->id, 'product');
-        $categories = [];
-        foreach ($categories_list as $category) {
-            if ($this->site->fk_cat_product != $category->id) {
-                $ret = $eCommerceCategory->fetchByFKCategory($category->id, $this->site->id);
-                if ($ret > 0) {
-                    $categories[] = ['id' => $eCommerceCategory->remote_id];
-                }
-            }
-        }
-
-        $status = $object->array_options["options_ecommerceng_wc_status_{$this->site->id}_{$conf->entity}"];
-
-        // Product
-        $productData = [
-            'name' => $object->label,                            // string		Product name.
-            //'slug'                  => '',			                            // string		Product slug.
-            //'type'                  => '',			                            // string		Product type. Options: simple, grouped, external and variable. Default is simple.
-            'status' => (!empty($status) ? $status : ''), //$object->status ? 'publish' : 'pending',	// string		Product status (post status). Options: draft, pending, private and publish. Default is publish.
-            //'featured'              => false,		                            // boolean		Featured product. Default is false.
-            //'catalog_visibility'    => '',                                      // string		Catalog visibility. Options: visible, catalog, search and hidden. Default is visible.
-            'description' => $object->array_options["options_ecommerceng_description_{$conf->entity}"],                    // string		Product description.
-            'short_description' => $object->array_options["options_ecommerceng_short_description_{$conf->entity}"],                                      // string		Product short description.
-            'sku' => $object->ref,                            // string		Unique identifier.
-            'regular_price' => $price,                          // string		Product regular price.
-            //'sale_price'            => '',                                      // string		Product sale price.
-            //'date_on_sale_from'     => '',                                      // date-time	Start date of sale price, in the site’s timezone.
-            //'date_on_sale_from_gmt' => '',                                      // date-time	Start date of sale price, as GMT.
-            //'date_on_sale_to'       => '',                                      // date-time	End date of sale price, in the site’s timezone.
-            //'date_on_sale_to_gmt'   => '',                                      // date-time	End date of sale price, in the site’s timezone.
-            //'virtual'               => $object->type == Product::TYPE_SERVICE,  // boolean		If the product is virtual. Default is false.
-            //'downloadable'          => false,                                   // boolean		If the product is downloadable. Default is false.
-            //'downloads'             => $downloads,                              // array		List of downloadable files. See Product - Downloads properties
-            //'download_limit'        => -1,                                      // integer		Number of times downloadable files can be downloaded after purchase. Default is -1.
-            //'download_expiry'       => -1,                                      // integer		Number of days until access to downloadable files expires. Default is -1.
-            //'external_url'          => '',                                      // string		Product external URL. Only for external products.
-            //'button_text'           => '',                                      // string		Product external button text. Only for external products.
-            'tax_status' => 'none',                                  // string		Tax status. Options: taxable, shipping and none. Default is taxable.
-            //'tax_class'             => '',                                      // string		Tax class.
-            //'manage_stock'          => false,                                   // boolean		Stock management at product level. Default is false.
-            //'stock_quantity'        => $object->stock_reel,                     // integer		Stock quantity.
-            //'in_stock'              => $object->stock_reel > 0,                 // boolean		Controls whether or not the product is listed as “in stock” or “out of stock” on the frontend. Default is true.
-            //'backorders'            => '',                                      // string		If managing stock, this controls if backorders are allowed. Options: no, notify and yes. Default is no.
-            //'sold_individually'     => false,                                   // boolean		Allow one item to be bought in a single order. Default is false.
-            'weight' => (!empty($totalWeight)?$totalWeight:''),                            // string		Product weight (kg).
-            //'dimensions'            => $dimensions,                             // object		Product dimensions. See Product - Dimensions properties
-            //'shipping_class'        => '',                                      // string		Shipping class slug.
-            //'reviews_allowed'       => true,                                    // boolean		Allow reviews. Default is true.
-            //'upsell_ids'            => [],                                      // array		List of up-sell products IDs.
-            //'cross_sell_ids'        => [],                                      // array		List of cross-sell products IDs.
-            //'parent_id'             => 0,                                       // integer		Product parent ID.
-            //'purchase_note'         => '',                                      // string		Optional note to send the customer after purchase.
-            'categories' => $categories,                             // array		List of categories. See Product - Categories properties
-            //'tags'                  => $tags,                                   // array		List of tags. See Product - Tags properties
-            //'images'                => $images,                                 // object		List of images. See Product - Images properties
-            //'attributes'            => $attributes,			                    // array		List of attributes. See Product - Attributes properties
-            //'default_attributes'    => $default_attributes,			            // array		Defaults variation attributes. See Product - Default attributes properties
-            //'menu_order'            => 0,			                            // integer		Menu order, used to custom sort products.
-            //'meta_data'             => $meta_data,                              // array		Meta data. See Product - Meta data properties
-        ];
-
-        // Set tax
-        if (!empty($object->array_options["options_ecommerceng_tax_class_{$this->site->id}_{$conf->entity}"])) {
-            $productData['tax_status'] = 'taxable';
-            $productData['tax_class'] = $object->array_options["options_ecommerceng_tax_class_{$this->site->id}_{$conf->entity}"];
-        }
-
         try {
-            $res = $this->client->post("products", $productData);
+            $results = $this->clientOld->get('products', ['filter' => ['sku' => $object->ref], 'fields' => 'id']);
         } catch (HttpClientException $fault) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceCreateRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
+            $this->errors[] = $langs->trans('ECommerceWoocommerceCheckRemoteProductExist', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
             dol_syslog(__METHOD__ .
-                ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceCreateRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
+                ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceCheckRemoteProductExist', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
                 ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
             return false;
         }
+        $results = isset($results->products) ? $results->products : [];
 
-        // Create remote link
-        $eCommerceProduct = new eCommerceProduct($this->db);
-        $eCommerceProduct->fk_product = $object->id;
-        $eCommerceProduct->fk_site = $this->site->id;
-        $eCommerceProduct->remote_id = $res->id;
-        $res = $eCommerceProduct->create($user);
-        if ($res < 0) {
-            $this->errors[] = $langs->trans('ECommerceWoocommerceCreateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error);
-            dol_syslog(__METHOD__ . ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceCreateRemoteProductLink', $object->id, $this->site->name, $eCommerceProduct->error), LOG_ERR);
-            return false;
+        if (is_array($results) && count($results) > 0) {
+            $remoteId = $results[0]->id;
+            if (!$this->updateRemoteProduct($remoteId, $object))
+                return false;
+        } else {
+            // Set weight
+            $totalWeight = $object->weight;
+            if ($object->weight_units < 50)   // >50 means a standard unit (power of 10 of official unit), > 50 means an exotic unit (like inch)
+            {
+                $trueWeightUnit = pow(10, $object->weight_units);
+                $totalWeight = sprintf("%f", $object->weight * $trueWeightUnit);
+            }
+
+            // Product - Meta data properties
+            $object->fetch_optionals();
+
+            // Price
+            if (!empty($conf->global->PRODUIT_MULTIPRICES)) {
+                $price_level = !empty($this->site->price_level) ? $this->site->price_level : 1;
+                $price = $object->multiprices[$price_level];
+            } else {
+                $price = $object->price;
+            }
+
+            /*
+            // Product - Downloads properties
+            $downloads = [
+                [
+                    'name' => '',       // string     File name.
+                    'file' => '',       // string     File URL.
+                ],
+            ];
+
+            // Product - Dimensions properties
+            $dimensions = [
+                'length' => '',     // string   Product length (cm).
+                'width' => '',      // string   Product width (cm).
+                'height' => '',     // string   Product height (cm).
+            ];
+
+            // Product - Categories properties
+            $categories = [
+                [
+                    'id' => 0,      // integer  Category ID.
+                ],
+            ];
+
+            // Product - Tags properties
+            $tags = [
+                [
+                    'id' => 0,      // integer  Tag ID.
+                ],
+            ];
+
+            // Product - Images properties
+            $images = [
+                [
+                    'id' => 0,              // integer	Image ID. Not required
+                    'src' => '',            // string	Image URL.
+                    'name' => '',           // string	Image name.
+                    'alt' => '',            // string	Image alternative text.
+                    'position' => 0,        // integer	Image position. 0 means that the image is featured.
+                ],
+            ];
+
+            // Product - Attributes properties
+            $attributes = [
+                [
+                    'id' => 0,              // integer	Attribute ID. Not required
+                    'name' => '',           // string	Attribute name.
+                    'position' => 0,        // integer	Attribute position.
+                    'visible' => false,     // boolean	Define if the attribute is visible on the “Additional information” tab in the product’s page. Default is false.
+                    'variation' => false,   // boolean	Define if the attribute can be used as variation. Default is false.
+                    'options' => [],        // array	List of available term names of the attribute.
+                ],
+            ];
+
+            // Product - Default attributes properties
+            $default_attributes = [
+                'id' => 0,              // integer	Attribute ID. Not required
+                'name' => '',           // string	Attribute name.
+                'option' => '',         // string	Selected attribute term name.
+            ];
+
+            // Product - Meta data properties
+            $meta_data = [
+                'key' => '', // string	Meta key.
+                'value' => '', // string	Meta value.
+            ];
+            */
+
+            // Get categories
+            $eCommerceCategory = new eCommerceCategory($this->db);
+            $cat = new Categorie($this->db);
+            $categories_list = $cat->containing($object->id, 'product');
+            $categories = [];
+            foreach ($categories_list as $category) {
+                if ($this->site->fk_cat_product != $category->id) {
+                    $ret = $eCommerceCategory->fetchByFKCategory($category->id, $this->site->id);
+                    if ($ret > 0) {
+                        $categories[] = ['id' => $eCommerceCategory->remote_id];
+                    }
+                }
+            }
+
+            $status = $object->array_options["options_ecommerceng_wc_status_{$this->site->id}_{$conf->entity}"];
+
+            // Product
+            $productData = [
+                'name' => $object->label,                            // string		Product name.
+                //'slug'                  => '',			                            // string		Product slug.
+                //'type'                  => '',			                            // string		Product type. Options: simple, grouped, external and variable. Default is simple.
+                'status' => (!empty($status) ? $status : ''), //$object->status ? 'publish' : 'pending',	// string		Product status (post status). Options: draft, pending, private and publish. Default is publish.
+                //'featured'              => false,		                            // boolean		Featured product. Default is false.
+                //'catalog_visibility'    => '',                                      // string		Catalog visibility. Options: visible, catalog, search and hidden. Default is visible.
+                'description' => $object->array_options["options_ecommerceng_description_{$conf->entity}"],                    // string		Product description.
+                'short_description' => $object->array_options["options_ecommerceng_short_description_{$conf->entity}"],                                      // string		Product short description.
+                'sku' => $object->ref,                            // string		Unique identifier.
+                'regular_price' => $price,                          // string		Product regular price.
+                //'sale_price'            => '',                                      // string		Product sale price.
+                //'date_on_sale_from'     => '',                                      // date-time	Start date of sale price, in the site’s timezone.
+                //'date_on_sale_from_gmt' => '',                                      // date-time	Start date of sale price, as GMT.
+                //'date_on_sale_to'       => '',                                      // date-time	End date of sale price, in the site’s timezone.
+                //'date_on_sale_to_gmt'   => '',                                      // date-time	End date of sale price, in the site’s timezone.
+                //'virtual'               => $object->type == Product::TYPE_SERVICE,  // boolean		If the product is virtual. Default is false.
+                //'downloadable'          => false,                                   // boolean		If the product is downloadable. Default is false.
+                //'downloads'             => $downloads,                              // array		List of downloadable files. See Product - Downloads properties
+                //'download_limit'        => -1,                                      // integer		Number of times downloadable files can be downloaded after purchase. Default is -1.
+                //'download_expiry'       => -1,                                      // integer		Number of days until access to downloadable files expires. Default is -1.
+                //'external_url'          => '',                                      // string		Product external URL. Only for external products.
+                //'button_text'           => '',                                      // string		Product external button text. Only for external products.
+                'tax_status' => 'none',                                  // string		Tax status. Options: taxable, shipping and none. Default is taxable.
+                //'tax_class'             => '',                                      // string		Tax class.
+                //'manage_stock'          => false,                                   // boolean		Stock management at product level. Default is false.
+                //'stock_quantity'        => $object->stock_reel,                     // integer		Stock quantity.
+                //'in_stock'              => $object->stock_reel > 0,                 // boolean		Controls whether or not the product is listed as “in stock” or “out of stock” on the frontend. Default is true.
+                //'backorders'            => '',                                      // string		If managing stock, this controls if backorders are allowed. Options: no, notify and yes. Default is no.
+                //'sold_individually'     => false,                                   // boolean		Allow one item to be bought in a single order. Default is false.
+                'weight' => (!empty($totalWeight) ? $totalWeight : ''),                            // string		Product weight (kg).
+                //'dimensions'            => $dimensions,                             // object		Product dimensions. See Product - Dimensions properties
+                //'shipping_class'        => '',                                      // string		Shipping class slug.
+                //'reviews_allowed'       => true,                                    // boolean		Allow reviews. Default is true.
+                //'upsell_ids'            => [],                                      // array		List of up-sell products IDs.
+                //'cross_sell_ids'        => [],                                      // array		List of cross-sell products IDs.
+                //'parent_id'             => 0,                                       // integer		Product parent ID.
+                //'purchase_note'         => '',                                      // string		Optional note to send the customer after purchase.
+                'categories' => $categories,                             // array		List of categories. See Product - Categories properties
+                //'tags'                  => $tags,                                   // array		List of tags. See Product - Tags properties
+                //'images'                => $images,                                 // object		List of images. See Product - Images properties
+                //'attributes'            => $attributes,			                    // array		List of attributes. See Product - Attributes properties
+                //'default_attributes'    => $default_attributes,			            // array		Defaults variation attributes. See Product - Default attributes properties
+                //'menu_order'            => 0,			                            // integer		Menu order, used to custom sort products.
+                //'meta_data'             => $meta_data,                              // array		Meta data. See Product - Meta data properties
+            ];
+
+            // Set tax
+            if (!empty($object->array_options["options_ecommerceng_tax_class_{$this->site->id}_{$conf->entity}"])) {
+                $productData['tax_status'] = 'taxable';
+                $productData['tax_class'] = $object->array_options["options_ecommerceng_tax_class_{$this->site->id}_{$conf->entity}"];
+            }
+
+            try {
+                $res = $this->client->post("products", $productData);
+                $remoteId = $res->id;
+            } catch (HttpClientException $fault) {
+                $this->errors[] = $langs->trans('ECommerceWoocommerceCreateRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage());
+                dol_syslog(__METHOD__ .
+                    ': Error:' . $langs->transnoentitiesnoconv('ECommerceWoocommerceCreateRemoteProduct', $this->site->name, $fault->getCode() . ': ' . $fault->getMessage()) .
+                    ' - Request:' . json_encode($fault->getRequest()) . ' - Response:' . json_encode($fault->getResponse()), LOG_ERR);
+                return false;
+            }
         }
 
         dol_syslog(__METHOD__ . ": end", LOG_DEBUG);
-        return true;
+        return $remoteId;
     }
 
     /**
